@@ -537,18 +537,19 @@ export const CARDS_FULL = [
   },
 ];
 
-export const max = (arr: number[]): number => arr.reduce((a, b) => Math.max(a, b));
-export const min = (arr: number[]): number => arr.reduce((a, b) => Math.min(a, b));
+export const max = (arr: number[]): number =>
+  arr.reduce((a, b) => Math.max(a, b));
+export const min = (arr: number[]): number =>
+  arr.reduce((a, b) => Math.min(a, b));
 export const sum = (arr: number[]): number => arr.reduce((a, b) => a + b);
 
 export const parseCardValue = (cardValue: string): number => {
-  switch (cardValue) {
-    case "A":
-      return 11;
-    case "J" || "Q" || "K":
-      return 10;
-    default:
-      return parseInt(cardValue);
+  if (cardValue === "A") {
+    return 11;
+  } else if (cardValue === "J" || cardValue === "Q" || cardValue === "K") {
+    return 10;
+  } else {
+    return parseInt(cardValue);
   }
 };
 
@@ -561,7 +562,8 @@ export const determineCardValues = (cardValue: number): number[] => {
 };
 
 export const determineHandValue =
-  (strategy: (arr: number[]) => number): Function => (hand: number[]): number =>
+  (strategy: (arr: number[]) => number): Function =>
+  (hand: number[]): number =>
     sum(hand.map(determineCardValues).map(strategy));
 
 // export const determineHandValueWithAce = (hand: number[]) => {
