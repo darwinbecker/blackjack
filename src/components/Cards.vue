@@ -61,25 +61,61 @@ watch(
     </div>
     <div>Value: {{ handValue }}</div>
 
-    <button
-      class="Hit-Button"
+    <v-btn
+      class="mx-2"
+      color="blue"
+      elevation="4"
+      x-large
+      @click="
+        {
+        }
+      "
+      :disabled="gameOver || handValue >= 21"
+    >
+      <!-- <v-icon x-large> mdi-plus</v-icon> -->
+      Bet
+    </v-btn>
+<!-- Hi -->
+    <v-btn
+      class="mx-2"
+      color="green"
+      elevation="4"
+      x-large
       @click="
         {
           randomIndex = Math.floor(Math.random() * CARDS_FULL.length);
           hand.push(CARDS_FULL[randomIndex]);
         }
       "
-      :disabled="isBust || handValue === 21"
+      :disabled="gameOver || handValue >= 21"
     >
+      <!-- <v-icon x-large> mdi-plus</v-icon> -->
       Hit
-    </button>
+    </v-btn>
+
+    <v-btn
+      class="mx-2"
+      color="red"
+      elevation="4"
+      x-large
+      @click="
+        {
+          gameOver = true;
+        }
+      "
+      :disabled="gameOver || handValue >= 21"
+    >
+      Stand
+    </v-btn>
 
     <div v-if="gameOver">
       <div v-if="handValue === 21">YOU WIN!</div>
       <div v-else-if="isBust">YOU LOSE!</div>
 
-      <button
-        class="Play-Again-Button"
+      <v-btn
+        color="orange"
+        elevation="4"
+        x-large
         @click="
           {
             randomIndex = Math.floor(Math.random() * CARDS_FULL.length);
@@ -90,7 +126,7 @@ watch(
         "
       >
         Play Again
-      </button>
+      </v-btn>
     </div>
   </div>
 </template>
