@@ -4,14 +4,20 @@ import {
   CARDS_FULL,
   determineBestHandValue,
   parseCardValue,
+  CardBacksite,
 } from "../config/Config";
 import type { Card } from "../models/Card";
 
 const randomIndex: Ref<number> = ref(
   Math.floor(Math.random() * CARDS_FULL.length)
-  // 11
 );
-const hand: Ref<Card[]> = ref([CARDS_FULL[randomIndex.value] as Card]);
+
+const getRandomCard = (): Card => {
+  randomIndex.value = Math.floor(Math.random() * CARDS_FULL.length);
+  return CARDS_FULL[randomIndex.value] as Card;
+};
+
+const hand: Ref<Card[]> = ref([getRandomCard(), getRandomCard()]);
 const handNumbers: Ref<number[]> = ref(
   hand.value.map((card) => parseCardValue(card.value))
 );
@@ -19,10 +25,25 @@ const handNumbers: Ref<number[]> = ref(
 const handValue: Ref<number> = ref(determineBestHandValue(handNumbers.value));
 
 const isBust: Ref<boolean> = ref(false);
+const isPush: Ref<boolean> = ref(false);
+const youWin: Ref<boolean> = ref(false);
 const gameOver: Ref<boolean> = ref(false);
 
+const isDealersTurn: Ref<boolean> = ref(false);
+const dealerHand: Ref<Card[]> = ref([getRandomCard(), CardBacksite]);
+const dealerHandNumbers: Ref<number[]> = ref(
+  dealerHand.value.map((card) => parseCardValue(card.value))
+);
+const dealerHandValue: Ref<number> = ref(
+  determineBestHandValue(dealerHandNumbers.value)
+);
+
 onMounted(() => {
-  console.log(hand.value[0]);
+  console.log(dealerHandNumbers.value);
+  // hand.value.push(getRandomCard());
+  // dealerHand.value.push(CardBacksite);
+  console.log(hand.value[0].name);
+  console.log(dealerHand.value[0].name);
 });
 
 watch(
@@ -36,6 +57,7 @@ watch(
       gameOver.value = true;
     } else if (handValue.value === 21) {
       isBust.value = false;
+      youWin.value = true;
       gameOver.value = true;
     }
   },
@@ -44,73 +66,112 @@ watch(
     deep: true,
   }
 );
+
+watch(
+  dealerHand,
+  (newDealerHand) => {
+    dealerHandNumbers.value = newDealerHand.map((card) =>
+      parseCardValue(card.value)
+    );
+    dealerHandValue.value = determineBestHandValue(dealerHandNumbers.value);
+
+    if (!isDealersTurn.value) return;
+    if (dealerHandValue.value < 17) {
+      dealerHand.value.push(getRandomCard());
+      return;
+    }
+
+    if (dealerHandValue.value > 21 || dealerHandValue.value < handValue.value) {
+      youWin.value = true;
+      gameOver.value = true;
+    } else if (dealerHandValue.value > handValue.value) {
+      youWin.value = false;
+      gameOver.value = true;
+    } else {
+      // push
+      console.log("PUSH");
+      console.log("dealerHandValue", dealerHandValue.value);
+      console.log("handValue", handValue.value);
+      isPush.value = true;
+      gameOver.value = true;
+    }
+  },
+  {
+    deep: true,
+  }
+);
 </script>
 
 <template>
-  <!-- <div class="Cards">
-    <div class="Card" v-for="(card, index) in CARDS" :key="card">
-      <div v-if="index % 13 == 0">new set</div>
-      <img :src="card" alt="card" width="100" />
-    </div>
-  </div> -->
   <div class="Blackjack">
+    <div class="Dealer">
+      <div
+        class="Card"
+        v-for="(card, index) in dealerHand"
+        :key="card.id + '-' + index"
+      >
+        <img :src="card.image" alt="card" width="100" />
+      </div>
+    </div>
+    <div>Value: {{ dealerHandValue }}</div>
+
     <div class="Hand">
-      <div class="Card" v-for="(card, index) in hand" :key="card.id">
+      <div
+        class="Card"
+        v-for="(card, index) in hand"
+        :key="card.id + '-' + index"
+      >
         <img :src="card.image" alt="card" width="100" />
       </div>
     </div>
     <div>Value: {{ handValue }}</div>
 
-    <v-btn
-      class="mx-2"
-      color="blue"
-      elevation="4"
-      x-large
-      @click="
-        {
-        }
-      "
-      :disabled="gameOver || handValue >= 21"
-    >
-      <!-- <v-icon x-large> mdi-plus</v-icon> -->
-      Bet
-    </v-btn>
-<!-- Hi -->
-    <v-btn
-      class="mx-2"
-      color="green"
-      elevation="4"
-      x-large
-      @click="
-        {
-          randomIndex = Math.floor(Math.random() * CARDS_FULL.length);
-          hand.push(CARDS_FULL[randomIndex]);
-        }
-      "
-      :disabled="gameOver || handValue >= 21"
-    >
-      <!-- <v-icon x-large> mdi-plus</v-icon> -->
-      Hit
-    </v-btn>
+    <div class="Button-List">
+      <v-btn
+        class="mx-2"
+        color="blue"
+        elevation="4"
+        x-large
+        @click="
+          {
+          }
+        "
+        :disabled="gameOver || handValue >= 21"
+      >
+        Bet
+      </v-btn>
+      <v-btn
+        class="mx-2"
+        color="green"
+        elevation="4"
+        x-large
+        @click="hand.push(getRandomCard())"
+        :disabled="gameOver || handValue >= 21"
+      >
+        Hit
+      </v-btn>
 
-    <v-btn
-      class="mx-2"
-      color="red"
-      elevation="4"
-      x-large
-      @click="
-        {
-          gameOver = true;
-        }
-      "
-      :disabled="gameOver || handValue >= 21"
-    >
-      Stand
-    </v-btn>
+      <v-btn
+        class="mx-2"
+        color="red"
+        elevation="4"
+        x-large
+        @click="
+          {
+            dealerHand.pop();
+            isDealersTurn = true;
+          }
+        "
+        :disabled="gameOver || handValue >= 21"
+      >
+        Stand
+      </v-btn>
+    </div>
 
     <div v-if="gameOver">
-      <div v-if="handValue === 21">YOU WIN!</div>
-      <div v-else-if="isBust">YOU LOSE!</div>
+      <div v-if="youWin">YOU WIN!</div>
+      <div v-else-if="isPush">PUSH</div>
+      <div v-else>YOU LOSE!</div>
 
       <v-btn
         color="orange"
@@ -118,9 +179,12 @@ watch(
         x-large
         @click="
           {
-            randomIndex = Math.floor(Math.random() * CARDS_FULL.length);
-            hand = [CARDS_FULL[randomIndex]];
+            hand = [getRandomCard(), getRandomCard()];
+            dealerHand = [getRandomCard(), CardBacksite];
+            isDealersTurn = false;
             isBust = false;
+            isPush = false;
+            youWin = false;
             gameOver = false;
           }
         "
@@ -137,7 +201,8 @@ watch(
   text-align: center;
 }
 
-.Hand {
+.Hand,
+.Dealer {
   display: flex;
   flex-direction: row;
   justify-content: center;

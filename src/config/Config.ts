@@ -537,6 +537,15 @@ export const CARDS_FULL = [
   },
 ];
 
+export const CardBacksite = {
+  id: 99,
+  name: "Card Back",
+  shortCode: "00",
+  value: "00",
+  image: CardBack,
+  symbol: CardBack,
+};
+
 export const max = (arr: number[]): number =>
   arr.reduce((a, b) => Math.max(a, b));
 export const min = (arr: number[]): number =>
@@ -548,6 +557,8 @@ export const parseCardValue = (cardValue: string): number => {
     return 11;
   } else if (cardValue === "J" || cardValue === "Q" || cardValue === "K") {
     return 10;
+  } else if (cardValue === "00") {
+    return 0;
   } else {
     return parseInt(cardValue);
   }
