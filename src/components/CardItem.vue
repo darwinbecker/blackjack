@@ -1,32 +1,38 @@
 <script setup lang="ts">
 import type { Card } from "@/models/Card";
-import { CardBacksite } from "../config/Config";
+import { CardBacksite } from "../config/Cards";
 
 interface CardProps {
   card: Card;
-  isRevealed: boolean;
+  isDealer: boolean;
 }
 const props = defineProps<CardProps>();
 </script>
 
 <template>
   <div class="flip-card">
-    <div class="flip-card-inner" v-if="isRevealed">
+    <div
+      :class="
+        props.isDealer
+          ? 'Dealercard flip-card-inner'
+          : 'Playercard flip-card-inner'
+      "
+    >
       <div class="flip-card-front">
-        <img :src="props.card.image" :alt="props.card.name" width="100" />
-      </div>
-      <div class="flip-card-back">
         <img :src="CardBacksite.image" :alt="CardBacksite.name" width="100" />
       </div>
+      <div class="flip-card-back">
+        <img :src="props.card.image" :alt="props.card.name" width="100" />
+      </div>
     </div>
-    <div class="flip-card-inner" v-else>
+    <!-- <div class="Playercard flip-card-inner" v-else>
       <div class="flip-card-front">
         <img :src="CardBacksite.image" :alt="props.card.name" width="100" />
       </div>
       <div class="flip-card-back">
         <img :src="props.card.image" :alt="CardBacksite.name" width="100" />
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -50,9 +56,9 @@ const props = defineProps<CardProps>();
 }
 
 /* Do an horizontal flip when you move the mouse over the flip box container */
-/* .flip-card:hover .flip-card-inner {
+.flip-card:hover .flip-card-inner {
   transform: rotateY(180deg);
-} */
+}
 .is-flipped {
   transform: rotateY(180deg);
 }
