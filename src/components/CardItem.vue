@@ -50,7 +50,10 @@ const props = defineProps<CardProps>();
 }
 
 /* Do an horizontal flip when you move the mouse over the flip box container */
-.flip-card:hover .flip-card-inner {
+/* .flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+} */
+.is-flipped {
   transform: rotateY(180deg);
 }
 

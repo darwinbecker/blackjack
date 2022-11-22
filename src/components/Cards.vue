@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Hand } from "@/models/Hand";
-import { onMounted, ref, watch, type Ref } from "vue";
+import { nextTick, onMounted, ref, watch, type Ref } from "vue";
 import {
   CARDS_FULL,
   determineBestHandValue,
@@ -19,12 +19,14 @@ const getRandomCard = (): Card => {
   return CARDS_FULL[randomIndex.value] as Card;
 };
 
-const hand: Ref<Hand> = ref({
-  cards: [getRandomCard(), getRandomCard()],
-  isRevealed: true,
-});
+const getLowCard = (): Card => {
+  // return CARDS_FULL[3] as Card;
+  return CARDS_FULL[0] as Card;
+};
+
+const hand: Ref<Card[]> = ref([getRandomCard(), getRandomCard()]);
 const handNumbers: Ref<number[]> = ref(
-  hand.value.cards.map((card) => parseCardValue(card.value))
+  hand.value.map((card) => parseCardValue(card.value))
 );
 
 const handValue: Ref<number> = ref(determineBestHandValue(handNumbers.value));
@@ -35,12 +37,9 @@ const youWin: Ref<boolean> = ref(false);
 const gameOver: Ref<boolean> = ref(false);
 
 const isDealersTurn: Ref<boolean> = ref(false);
-const dealerHand: Ref<Hand> = ref({
-  cards: [getRandomCard(), getRandomCard()],
-  isRevealed: false,
-});
+const dealerHand: Ref<Card[]> = ref([getLowCard(), getLowCard()]);
 const dealerHandNumbers: Ref<number[]> = ref(
-  dealerHand.value.cards.map((card) => parseCardValue(card.value))
+  dealerHand.value.map((card) => parseCardValue(card.value))
 );
 const dealerHandValue: Ref<number> = ref(
   determineBestHandValue([dealerHandNumbers.value[0]])
@@ -50,14 +49,14 @@ onMounted(() => {
   console.log(dealerHandNumbers.value);
   // hand.value.push(getRandomCard());
   // dealerHand.value.push(CardBacksite);
-  console.log(hand.value.cards[0].name);
-  console.log(dealerHand.value.cards[0].name);
+  console.log(hand.value[0].name);
+  console.log(dealerHand.value[0].name);
 });
 
 watch(
   hand,
   (newHand) => {
-    handNumbers.value = newHand.cards.map((card) => parseCardValue(card.value));
+    handNumbers.value = newHand.map((card) => parseCardValue(card.value));
     handValue.value = determineBestHandValue(handNumbers.value);
 
     if (handValue.value > 21) {
@@ -76,18 +75,34 @@ watch(
 );
 
 watch(
-  dealerHand,
-  (newDealerHand) => {
-    dealerHandNumbers.value = newDealerHand.cards.map((card) =>
+  [dealerHand, isDealersTurn],
+  async ([newDealerHand, newIsDealersTurn]) => {
+    // dealerHandNumbers.value = [parseCardValue(newDealerHand[0].value)];
+    dealerHandValue.value = parseCardValue(newDealerHand[0].value); // only show & calculate first card (max. value = 11 for Ace)
+
+    if (!newIsDealersTurn) return;
+    dealerHandNumbers.value = newDealerHand.map((card) =>
       parseCardValue(card.value)
     );
     dealerHandValue.value = determineBestHandValue(dealerHandNumbers.value);
 
-    if (!isDealersTurn.value) return;
     if (dealerHandValue.value < 17) {
-      dealerHand.value.cards.push(getRandomCard());
+      // draw card every 1.5s until dealer has 17 or more
+      setTimeout(async () => {
+        dealerHand.value.push(getLowCard());
+        console.log("get new card ");
+        // reveal card after
+        // setTimeout(async () => {
+        await nextTick().then(() => {
+          revealCards();
+        });
+        // }, 250);
+      }, 1500);
       return;
     }
+
+    // revealCards();
+    // await nextTick().then(() => revealCards());
 
     if (dealerHandValue.value > 21 || dealerHandValue.value < handValue.value) {
       youWin.value = true;
@@ -108,6 +123,31 @@ watch(
     deep: true,
   }
 );
+
+const resetGame = async () => {
+  isDealersTurn.value = false;
+  isBust.value = false;
+  isPush.value = false;
+  youWin.value = false;
+  gameOver.value = false;
+  hand.value = [getRandomCard(), getRandomCard()];
+  dealerHand.value = [getLowCard(), getLowCard()];
+};
+
+const revealCards = () => {
+  // flip cards
+  const hiddenCards = document.getElementsByClassName("HiddenCard");
+  // console.log(hiddenCards);
+  // console.log("length", hiddenCards.length);
+
+  for (let i = 0; i < hiddenCards.length; i++) {
+    setTimeout(() => {
+      // console.log(hiddenCards[i]);
+      const hiddenCardInner = hiddenCards[i].firstChild! as HTMLDivElement;
+      hiddenCardInner.classList.add("is-flipped");
+    }, 500);
+  }
+};
 </script>
 
 <template>
@@ -115,16 +155,16 @@ watch(
     <div class="Dealer">
       <div
         class="Card"
-        v-for="(card, index) in dealerHand.cards"
+        v-for="(card, index) in dealerHand"
         :key="card.id + '-' + index"
       >
         <CardItem
-          v-if="index == 1"
+          class="HiddenCard"
+          v-if="index > 0"
           :card="card"
-          :isRevealed="dealerHand.isRevealed"
+          :isRevealed="false"
         ></CardItem>
         <CardItem v-else :card="card" :isRevealed="true"></CardItem>
-        <!-- <img :src="card.image" alt="card" width="100" /> -->
       </div>
     </div>
     <div>Value: {{ dealerHandValue }}</div>
@@ -132,10 +172,10 @@ watch(
     <div class="Hand">
       <div
         class="Card"
-        v-for="(card, index) in hand.cards"
+        v-for="(card, index) in hand"
         :key="card.id + '-' + index"
       >
-        <CardItem :card="card" :isRevealed="hand.isRevealed"></CardItem>
+        <CardItem :card="card" :isRevealed="true"></CardItem>
         <!-- <img :src="card.image" alt="card" width="100" /> -->
       </div>
     </div>
@@ -162,7 +202,7 @@ watch(
         color="green"
         elevation="4"
         x-large
-        @click="hand.cards.push(getRandomCard())"
+        @click="hand.push(getRandomCard())"
         :disabled="gameOver || handValue >= 21"
       >
         Hit
@@ -173,13 +213,7 @@ watch(
         color="red"
         elevation="4"
         x-large
-        @click="
-          {
-            // dealerHand.cards.pop();
-            dealerHand.isRevealed = true;
-            isDealersTurn = true;
-          }
-        "
+        @click="isDealersTurn = true"
         :disabled="gameOver || handValue >= 21"
       >
         Stand
@@ -195,28 +229,7 @@ watch(
       <div v-else-if="isPush">PUSH</div>
       <div v-else>You Lose.</div>
 
-      <v-btn
-        color="orange"
-        elevation="4"
-        x-large
-        @click="
-          {
-            hand = {
-              cards: [getRandomCard(), getRandomCard()],
-              isRevealed: true,
-            };
-            dealerHand = {
-              cards: [getRandomCard(), getRandomCard()],
-              isRevealed: false,
-            };
-            isDealersTurn = false;
-            isBust = false;
-            isPush = false;
-            youWin = false;
-            gameOver = false;
-          }
-        "
-      >
+      <v-btn color="orange" elevation="4" x-large @click="resetGame">
         Play Again
       </v-btn>
     </div>
