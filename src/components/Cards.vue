@@ -32,7 +32,7 @@ const getHighCard = (): Card => {
   return CARDS_FULL[8] as Card;
 };
 
-const hand: Ref<Card[]> = ref([getHighCard(), getHighCard()]);
+const hand: Ref<Card[]> = ref([getRandomCard(), getRandomCard()]);
 const handNumbers: Ref<number[]> = ref(
   [0]
   // hand.value.map((card) => parseCardValue(card.value))
@@ -43,15 +43,13 @@ const handValue: Ref<number> = ref(
   // determineBestHandValue(handNumbers.value)
 );
 
-const drawnCards: Ref<Card[]> = ref([getRandomCard()]);
-
 const isBust: Ref<boolean> = ref(false);
 const isPush: Ref<boolean> = ref(false);
 const youWin: Ref<boolean> = ref(false);
 const gameOver: Ref<boolean> = ref(false);
 
 const isDealersTurn: Ref<boolean> = ref(false);
-const dealerHand: Ref<Card[]> = ref([getLowCard(), getLowCard()]);
+const dealerHand: Ref<Card[]> = ref([getRandomCard(), getRandomCard()]);
 const dealerHandNumbers: Ref<number[]> = ref(
   [0]
   // dealerHand.value.map((card) => parseCardValue(card.value))
@@ -98,8 +96,8 @@ onMounted(() => {
   });
 });
 
-const hit = () => {
-  hand.value.push(getHighCard());
+const hit = (hand: Card[]) => {
+  hand.push(getRandomCard());
 };
 
 watch(
@@ -169,81 +167,104 @@ watch(
 // watch(
 //   isDealersTurn,
 //   async (newIsDealersTurn) => {
-// // watch(
-// //   [dealerHand, isDealersTurn],
-// //   ([newDealerHand, newIsDealersTurn]) => {
-//     if (!newIsDealersTurn) return;
+watch(
+  [dealerHand, isDealersTurn],
+  ([newDealerHand, newIsDealersTurn]) => {
+    if (!newIsDealersTurn) return;
 
-//     nextTick(() => {
-//       animationIsRunning.value = true;
-//       const dealerCards = document.querySelectorAll(
-//         ".Dealercard.flip-card-inner"
-//       );
+    nextTick(() => {
+      animationIsRunning.value = true;
+      const dealerCards = document.querySelectorAll(
+        ".Dealercard.flip-card-inner"
+      );
+      if (dealerCards.length == 0) {
+        animationIsRunning.value = false;
+        return;
+      }
 
-//       // if (dealerCards.length == 0) {
-//       //   animationIsRunning.value = false;
-//       //   return;
-//       // }
+      if (dealerCards.length === 2) {
+        // this is a hack to get the last card to flip
+        setTimeout(() => {
+          dealerCards[dealerCards.length - 1].classList.add("is-flipped");
+          setTimeout(() => {
+            dealerHandNumbers.value = [
+              parseCardValue(newDealerHand[newDealerHand.length - 1].value),
+            ];
 
-//       // reveal dealers hand
-//       dealerCards.forEach((card, index) => {
-//         setTimeout(() => {
-//           card.classList.add("is-flipped");
-//           setTimeout(() => {
-//             dealerHandValue.value += determineBestHandValue([
-//               parseCardValue(dealerHand.value[index].value),
-//             ]);
+            dealerHandValue.value += determineBestHandValue(
+              dealerHandNumbers.value
+            );
 
-//             // Todo: check dealer hand value
+            checkDealerHandValue();
 
-//             animationIsRunning.value = false;
-//           }, REVEAL_HAND_VALUE_DELAY_MS);
-//         }, REVEAL_CARD_DELAY_MS * (index + 1));
-//       });
-//     });
+            animationIsRunning.value = false;
+          }, REVEAL_HAND_VALUE_DELAY_MS);
+        }, REVEAL_CARD_DELAY_MS);
+      } else {
+        setTimeout(() => {
+          dealerCards[dealerCards.length - 1].classList.add("is-flipped");
+          setTimeout(() => {
+            dealerHandNumbers.value = [
+              parseCardValue(newDealerHand[newDealerHand.length - 1].value),
+            ];
 
-//     dealerHandNumbers.value = dealerHand.value.map((card) =>
-//       parseCardValue(card.value)
-//     );
-//     dealerHandValue.value = determineBestHandValue(dealerHandNumbers.value);
+            dealerHandValue.value += determineBestHandValue(
+              dealerHandNumbers.value
+            );
 
-//     if (dealerHandValue.value < 17) {
-//       // draw card every 1.5s until dealer has 17 or more
-//       setTimeout(async () => {
-//         dealerHand.value.push(getLowCard());
-//         console.log("get new card ");
-//         // reveal card after
-//         // setTimeout(async () => {
-//         await nextTick().then(() => {
-//           revealCards();
-//         });
-//         // }, 250);
-//       }, 1500);
-//       return;
-//     }
+            checkDealerHandValue();
 
-//     // revealCards();
-//     // await nextTick().then(() => revealCards());
+            animationIsRunning.value = false;
+          }, REVEAL_HAND_VALUE_DELAY_MS);
+        }, REVEAL_CARD_DELAY_MS);
+      }
 
-//     if (dealerHandValue.value > 21 || dealerHandValue.value < handValue.value) {
-//       youWin.value = true;
-//       gameOver.value = true;
-//     } else if (dealerHandValue.value > handValue.value) {
-//       youWin.value = false;
-//       gameOver.value = true;
-//     } else {
-//       // push
-//       console.log("PUSH");
-//       console.log("dealerHandValue", dealerHandValue.value);
-//       console.log("handValue", handValue.value);
-//       isPush.value = true;
-//       gameOver.value = true;
-//     }
-//   },
-//   {
-//     deep: true,
-//   }
-// );
+      // reveal dealers hand
+      // dealerCards.forEach((card, index) => {
+      //   setTimeout(() => {
+      //     card.classList.add("is-flipped");
+      //     setTimeout(() => {
+      //       dealerHandValue.value += determineBestHandValue([
+      //         parseCardValue(newDealerHand[index].value),
+      //       ]);
+      //       console.log("dealerHandValue", dealerHandValue.value);
+
+      //       // Todo: check dealer hand value
+
+      //       if (dealerHandValue.value < 17) {
+      //         // draw card until dealer has 17 or more
+      //         newDealerHand.push(getHighCard());
+      //         return;
+      //       }
+
+      //       if (
+      //         dealerHandValue.value > 21 ||
+      //         dealerHandValue.value < handValue.value
+      //       ) {
+      //         youWin.value = true;
+      //         gameOver.value = true;
+      //       } else if (dealerHandValue.value > handValue.value) {
+      //         youWin.value = false;
+      //         gameOver.value = true;
+      //       } else {
+      //         // push
+      //         console.log("PUSH");
+      //         console.log("dealerHandValue", dealerHandValue.value);
+      //         console.log("handValue", handValue.value);
+      //         isPush.value = true;
+      //         gameOver.value = true;
+      //       }
+
+      //       animationIsRunning.value = false;
+      //     }, REVEAL_HAND_VALUE_DELAY_MS);
+      //   }, REVEAL_CARD_DELAY_MS * (index + 1));
+      // });
+    });
+  },
+  {
+    deep: true,
+  }
+);
 
 // watch(
 //   [dealerHand, isDealersTurn],
@@ -295,6 +316,22 @@ watch(
 //   }
 // );
 
+const checkDealerHandValue = () => {
+  if (
+    dealerHandValue.value > 16 &&
+    dealerHandValue.value < 22 &&
+    dealerHandValue.value > handValue.value
+  ) {
+    youWin.value = false;
+    gameOver.value = true;
+  } else if (dealerHandValue.value > 16) {
+    youWin.value = true;
+    gameOver.value = true;
+  } else {
+    hit(dealerHand.value);
+  }
+};
+
 const checkHandValue = () => {
   if (handValue.value > 21) {
     isBust.value = true;
@@ -317,8 +354,8 @@ const resetGame = async () => {
   hand.value = [];
   dealerHand.value = [];
   nextTick(() => {
-    hand.value = [getLowCard(), getLowCard()];
-    dealerHand.value = [getLowCard(), getLowCard()];
+    hand.value = [getRandomCard(), getRandomCard()];
+    dealerHand.value = [getRandomCard(), getRandomCard()];
   });
 };
 
@@ -386,7 +423,7 @@ const revealCards = () => {
         color="green"
         elevation="4"
         x-large
-        @click="hit"
+        @click="hit(hand)"
         :disabled="
           gameOver || handValue >= 21 || animationIsRunning || isDealersTurn
         "
