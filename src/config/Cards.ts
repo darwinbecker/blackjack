@@ -59,6 +59,7 @@ import HeartSymbol from "../assets/Blackjack-Symbole/Herz.svg";
 import DiamondSymbol from "../assets/Blackjack-Symbole/Karo.svg";
 import SpadeSymbol from "../assets/Blackjack-Symbole/Pik.svg";
 import ClubSymbol from "../assets/Blackjack-Symbole/Kreuz.svg";
+import type { Card } from "@/models/Card";
 
 export const CARDS = [
   Heart2,
@@ -618,4 +619,24 @@ export const determineBestHandValue = (hand: number[]): number => {
   return isBust(optimisticValue)
     ? pessimisticF(replacedHandUpdated)
     : optimisticValue;
+};
+
+export const getRandomCard = (): Card => {
+  const random: number = Math.floor(Math.random() * CARDS_FULL.length);
+  return CARDS_FULL[random] as Card;
+};
+
+export const getLowCard = (): Card => {
+  // return CARDS_FULL[3] as Card;
+  return CARDS_FULL[0] as Card;
+};
+
+export const getHighCard = (): Card => {
+  // return CARDS_FULL[3] as Card;
+  return CARDS_FULL[8] as Card;
+};
+
+export const getAceCard = (): Card => {
+  // return CARDS_FULL[3] as Card;
+  return CARDS_FULL[12] as Card;
 };
