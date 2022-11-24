@@ -14,7 +14,7 @@ import {
   REVEAL_HAND_VALUE_DELAY_MS,
 } from "../config/Config";
 import type { Card } from "../models/Card";
-import CardAnimation from "./CardAnimation.vue";
+import BounceInAnimation from "./BounceInAnimation.vue";
 import CardItem from "./CardItem.vue";
 
 import { useGameStateStore } from "../stores/GameState";
@@ -215,7 +215,10 @@ const checkDealerHandValue = () => {
   ) {
     gameStateStore.setYouWin(false);
     gameStateStore.setGameOver(true);
-  } else if (dealerHandValue.value === handValue.value) {
+  } else if (
+    dealerHandValue.value === handValue.value &&
+    dealerHandValue.value > 16
+  ) {
     gameStateStore.setIsPush(true);
     gameStateStore.setGameOver(true);
   } else if (dealerHandValue.value > 16) {
@@ -265,7 +268,7 @@ const resetGame = async () => {
         <CardItem class="HiddenCard" :card="card" :isDealer="true"></CardItem>
       </div>
     </div>
-    <div>Value: {{ dealerHandValue }}</div>
+    <p>Value: {{ dealerHandValue }}</p>
 
     <div class="Hand">
       <div
@@ -277,7 +280,7 @@ const resetGame = async () => {
         <!-- <img :src="card.image" alt="card" width="100" /> -->
       </div>
     </div>
-    <div>Value: {{ handValue }}</div>
+    <p>Value: {{ handValue }}</p>
 
     <div class="Button-List">
       <!-- Bet -->
@@ -327,12 +330,9 @@ const resetGame = async () => {
       </q-btn>
     </div>
 
-    <CardAnimation>
-      <div v-if="gameStateStore.gameOver && gameStateStore.youWin">
-        You Win!
-      </div>
-    </CardAnimation>
-
+    <BounceInAnimation>
+      <h3 v-if="gameStateStore.gameOver && gameStateStore.youWin">You Win!</h3>
+    </BounceInAnimation>
     <div v-if="gameStateStore.gameOver">
       <div v-if="gameStateStore.youWin"></div>
       <div v-else-if="gameStateStore.isPush">PUSH</div>

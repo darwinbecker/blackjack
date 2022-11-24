@@ -5,7 +5,7 @@
 <template>
   <!-- wrap the built-in Transition component -->
   <!-- @enter="onEnter" @leave="onLeave" -->
-  <transition name="card-animation">
+  <transition name="bounce-in-animation">
     <slot></slot>
     <!-- pass down slot content -->
   </transition>
@@ -17,11 +17,11 @@
   Note: avoid using <style scoped> here since it
   does not apply to slot content.
 */
-.card-animation-enter-active {
+.bounce-in-animation-enter-active {
   animation: bounce-in 0.5s;
 }
 
-.card-animation-leave-active {
+.bounce-in-animation-leave-active {
   animation: bounce-in 0.25s reverse;
 }
 
