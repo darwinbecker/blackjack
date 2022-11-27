@@ -2,13 +2,12 @@
 import { inject, nextTick, onMounted, ref, watch, type Ref } from "vue";
 import {
   CARDS_FULL,
-  determineBestHandValue,
-  parseCardValue,
   getRandomCard,
   getAceCard,
   getHighCard,
   getLowCard,
 } from "../config/Cards";
+import { determineBestHandValue, parseCardValue } from "../lib/HandValue";
 import {
   REVEAL_CARD_DELAY_MS,
   REVEAL_HAND_VALUE_DELAY_MS,
