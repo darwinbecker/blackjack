@@ -1,105 +1,259 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, type Ref } from "vue";
+import { inject, nextTick, onMounted, ref, watch, type Ref } from "vue";
 import {
   CARDS_FULL,
-  determineBestHandValue,
-  parseCardValue,
-  CardBacksite,
+  getRandomCard,
+  getAceCard,
+  getHighCard,
+  getLowCard,
+} from "../config/Cards";
+import { determineBestHandValue, parseCardValue } from "../lib/HandValue";
+import {
+  REVEAL_CARD_DELAY_MS,
+  REVEAL_HAND_VALUE_DELAY_MS,
 } from "../config/Config";
 import type { Card } from "../models/Card";
+import BounceInAnimation from "./BounceInAnimation.vue";
+import CardItem from "./CardItem.vue";
 
-const randomIndex: Ref<number> = ref(
-  Math.floor(Math.random() * CARDS_FULL.length)
-);
-
-const getRandomCard = (): Card => {
-  randomIndex.value = Math.floor(Math.random() * CARDS_FULL.length);
-  return CARDS_FULL[randomIndex.value] as Card;
-};
+import { useGameStateStore } from "../stores/GameState";
 
 const hand: Ref<Card[]> = ref([getRandomCard(), getRandomCard()]);
 const handNumbers: Ref<number[]> = ref(
-  hand.value.map((card) => parseCardValue(card.value))
+  [0]
+  // hand.value.map((card) => parseCardValue(card.value))
 );
 
-const handValue: Ref<number> = ref(determineBestHandValue(handNumbers.value));
+const handValue: Ref<number> = ref(
+  0
+  // determineBestHandValue(handNumbers.value)
+);
 
-const isBust: Ref<boolean> = ref(false);
-const isPush: Ref<boolean> = ref(false);
-const youWin: Ref<boolean> = ref(false);
-const gameOver: Ref<boolean> = ref(false);
+const gameStateStore = useGameStateStore();
 
 const isDealersTurn: Ref<boolean> = ref(false);
-const dealerHand: Ref<Card[]> = ref([getRandomCard(), CardBacksite]);
+const dealerHand: Ref<Card[]> = ref([getRandomCard(), getRandomCard()]);
 const dealerHandNumbers: Ref<number[]> = ref(
-  dealerHand.value.map((card) => parseCardValue(card.value))
+  [0]
+  // dealerHand.value.map((card) => parseCardValue(card.value))
+  // [parseCardValue(dealerHand.value[0].value)]
 );
 const dealerHandValue: Ref<number> = ref(
-  determineBestHandValue(dealerHandNumbers.value)
+  0
+  // determineBestHandValue([dealerHandNumbers.value[0]])
 );
 
+const animationIsRunning: Ref<boolean> = ref(false);
+
 onMounted(() => {
-  console.log(dealerHandNumbers.value);
-  // hand.value.push(getRandomCard());
-  // dealerHand.value.push(CardBacksite);
-  console.log(hand.value[0].name);
-  console.log(dealerHand.value[0].name);
+  // reveal players hand
+  animationIsRunning.value = true;
+  nextTick(() => {
+    const playerCards = document.querySelectorAll(
+      ".Playercard.flip-card-inner"
+    );
+    playerCards.forEach((card, index) => {
+      setTimeout(() => {
+        card.classList.add("is-flipped");
+        setTimeout(() => {
+          handValue.value += determineBestHandValue([
+            parseCardValue(hand.value[index].value),
+          ]);
+          checkHandValue();
+        }, REVEAL_HAND_VALUE_DELAY_MS);
+      }, REVEAL_CARD_DELAY_MS * (index + 1));
+    });
+
+    // reveal dealers hand
+    const dealerCards = document.querySelectorAll(
+      ".Dealercard.flip-card-inner"
+    );
+    setTimeout(() => {
+      dealerCards[0].classList.add("is-flipped");
+      setTimeout(() => {
+        dealerHandValue.value = determineBestHandValue([
+          parseCardValue(dealerHand.value[0].value),
+        ]);
+        animationIsRunning.value = false;
+      }, REVEAL_HAND_VALUE_DELAY_MS);
+    }, REVEAL_CARD_DELAY_MS * (playerCards.length + 1));
+  });
 });
+
+const hit = (hand: Card[]) => {
+  hand.push(getRandomCard());
+};
 
 watch(
   hand,
   (newHand) => {
-    handNumbers.value = newHand.map((card) => parseCardValue(card.value));
-    handValue.value = determineBestHandValue(handNumbers.value);
+    nextTick(() => {
+      animationIsRunning.value = true;
+      const playerCards = document.querySelectorAll(
+        ".Playercard.flip-card-inner"
+      );
+      if (playerCards.length == 0) {
+        animationIsRunning.value = false;
+        return;
+      }
 
-    if (handValue.value > 21) {
-      isBust.value = true;
-      gameOver.value = true;
-    } else if (handValue.value === 21) {
-      isBust.value = false;
-      youWin.value = true;
-      gameOver.value = true;
-    }
+      if (playerCards.length > 2) {
+        // this is a hack to get the last card to flip
+        setTimeout(() => {
+          playerCards[playerCards.length - 1].classList.add("is-flipped");
+          setTimeout(() => {
+            handNumbers.value = [
+              parseCardValue(hand.value[hand.value.length - 1].value),
+            ];
+
+            handValue.value += determineBestHandValue(handNumbers.value);
+            checkHandValue();
+
+            animationIsRunning.value = false;
+          }, REVEAL_HAND_VALUE_DELAY_MS);
+        }, REVEAL_CARD_DELAY_MS);
+      } else {
+        // restart game => reveal players hand
+        playerCards.forEach((card, index) => {
+          setTimeout(() => {
+            card.classList.add("is-flipped");
+            setTimeout(() => {
+              handValue.value += determineBestHandValue([
+                parseCardValue(hand.value[index].value),
+              ]);
+
+              checkHandValue();
+            }, REVEAL_HAND_VALUE_DELAY_MS);
+          }, REVEAL_CARD_DELAY_MS * (index + 1));
+        });
+
+        // reveal dealers hand
+        const dealerCards = document.querySelectorAll(
+          ".Dealercard.flip-card-inner"
+        );
+        setTimeout(() => {
+          dealerCards[0].classList.add("is-flipped");
+          setTimeout(() => {
+            dealerHandValue.value = determineBestHandValue([
+              parseCardValue(dealerHand.value[0].value),
+            ]);
+            animationIsRunning.value = false;
+          }, REVEAL_HAND_VALUE_DELAY_MS);
+        }, REVEAL_CARD_DELAY_MS * (playerCards.length + 1));
+      }
+    });
   },
   {
-    immediate: true,
     deep: true,
   }
 );
 
 watch(
-  dealerHand,
-  (newDealerHand) => {
-    dealerHandNumbers.value = newDealerHand.map((card) =>
-      parseCardValue(card.value)
-    );
-    dealerHandValue.value = determineBestHandValue(dealerHandNumbers.value);
+  [dealerHand, isDealersTurn],
+  ([newDealerHand, newIsDealersTurn]) => {
+    if (!newIsDealersTurn) return;
 
-    if (!isDealersTurn.value) return;
-    if (dealerHandValue.value < 17) {
-      dealerHand.value.push(getRandomCard());
-      return;
-    }
+    nextTick(() => {
+      animationIsRunning.value = true;
+      const dealerCards = document.querySelectorAll(
+        ".Dealercard.flip-card-inner"
+      );
+      if (dealerCards.length == 0) {
+        animationIsRunning.value = false;
+        return;
+      }
 
-    if (dealerHandValue.value > 21 || dealerHandValue.value < handValue.value) {
-      youWin.value = true;
-      gameOver.value = true;
-    } else if (dealerHandValue.value > handValue.value) {
-      youWin.value = false;
-      gameOver.value = true;
-    } else {
-      // push
-      console.log("PUSH");
-      console.log("dealerHandValue", dealerHandValue.value);
-      console.log("handValue", handValue.value);
-      isPush.value = true;
-      gameOver.value = true;
-    }
+      if (dealerCards.length === 2) {
+        // this is a hack to get the last card to flip
+        setTimeout(() => {
+          dealerCards[dealerCards.length - 1].classList.add("is-flipped");
+          setTimeout(() => {
+            dealerHandNumbers.value = [
+              parseCardValue(newDealerHand[newDealerHand.length - 1].value),
+            ];
+
+            dealerHandValue.value += determineBestHandValue(
+              dealerHandNumbers.value
+            );
+
+            checkDealerHandValue();
+
+            animationIsRunning.value = false;
+          }, REVEAL_HAND_VALUE_DELAY_MS);
+        }, REVEAL_CARD_DELAY_MS);
+      } else {
+        setTimeout(() => {
+          dealerCards[dealerCards.length - 1].classList.add("is-flipped");
+          setTimeout(() => {
+            dealerHandNumbers.value = [
+              parseCardValue(newDealerHand[newDealerHand.length - 1].value),
+            ];
+
+            dealerHandValue.value += determineBestHandValue(
+              dealerHandNumbers.value
+            );
+
+            checkDealerHandValue();
+
+            animationIsRunning.value = false;
+          }, REVEAL_HAND_VALUE_DELAY_MS);
+        }, REVEAL_CARD_DELAY_MS);
+      }
+    });
   },
   {
     deep: true,
   }
 );
+
+const checkDealerHandValue = () => {
+  if (
+    dealerHandValue.value > 16 &&
+    dealerHandValue.value < 22 &&
+    dealerHandValue.value > handValue.value
+  ) {
+    gameStateStore.setYouWin(false);
+    gameStateStore.setGameOver(true);
+  } else if (
+    dealerHandValue.value === handValue.value &&
+    dealerHandValue.value > 16
+  ) {
+    gameStateStore.setIsPush(true);
+    gameStateStore.setGameOver(true);
+  } else if (dealerHandValue.value > 16) {
+    gameStateStore.setYouWin(true);
+    gameStateStore.setGameOver(true);
+  } else {
+    hit(dealerHand.value);
+  }
+};
+
+const checkHandValue = () => {
+  if (handValue.value > 21) {
+    gameStateStore.setIsBust(true);
+    gameStateStore.setGameOver(true);
+  } else if (handValue.value === 21) {
+    gameStateStore.setIsBust(false);
+    gameStateStore.setYouWin(true);
+    gameStateStore.setGameOver(true);
+  }
+};
+
+const resetGame = async () => {
+  isDealersTurn.value = false;
+  gameStateStore.setIsBust(false);
+  gameStateStore.setIsPush(false);
+  gameStateStore.setYouWin(false);
+  gameStateStore.setGameOver(false);
+  handValue.value = 0;
+  dealerHandValue.value = 0;
+  hand.value = [];
+  dealerHand.value = [];
+  nextTick(() => {
+    hand.value = [getRandomCard(), getRandomCard()];
+    dealerHand.value = [getRandomCard(), getRandomCard()];
+  });
+};
 </script>
 
 <template>
@@ -110,10 +264,10 @@ watch(
         v-for="(card, index) in dealerHand"
         :key="card.id + '-' + index"
       >
-        <img :src="card.image" alt="card" width="100" />
+        <CardItem class="HiddenCard" :card="card" :isDealer="true"></CardItem>
       </div>
     </div>
-    <div>Value: {{ dealerHandValue }}</div>
+    <p>Value: {{ dealerHandValue }}</p>
 
     <div class="Hand">
       <div
@@ -121,76 +275,69 @@ watch(
         v-for="(card, index) in hand"
         :key="card.id + '-' + index"
       >
-        <img :src="card.image" alt="card" width="100" />
+        <CardItem :card="card" :isDealer="false"></CardItem>
+        <!-- <img :src="card.image" alt="card" width="100" /> -->
       </div>
     </div>
-    <div>Value: {{ handValue }}</div>
+    <p>Value: {{ handValue }}</p>
 
     <div class="Button-List">
-      <v-btn
-        class="mx-2"
+      <!-- Bet -->
+      <q-btn
+        class="q-mx-sm q-px-lg"
         color="blue"
-        elevation="4"
-        x-large
         @click="
           {
           }
         "
-        :disabled="gameOver || handValue >= 21"
+        :disabled="
+          gameStateStore.gameOver ||
+          handValue >= 21 ||
+          animationIsRunning ||
+          isDealersTurn
+        "
       >
         Bet
-      </v-btn>
-      <v-btn
-        class="mx-2"
+      </q-btn>
+      <!-- Hit -->
+      <q-btn
+        class="q-mx-sm q-px-lg"
         color="green"
-        elevation="4"
-        x-large
-        @click="hand.push(getRandomCard())"
-        :disabled="gameOver || handValue >= 21"
+        @click="hit(hand)"
+        :disabled="
+          gameStateStore.gameOver ||
+          handValue >= 21 ||
+          animationIsRunning ||
+          isDealersTurn
+        "
       >
         Hit
-      </v-btn>
-
-      <v-btn
-        class="mx-2"
+      </q-btn>
+      <!-- Stand -->
+      <q-btn
+        class="q-mx-sm q-px-lg"
         color="red"
-        elevation="4"
-        x-large
-        @click="
-          {
-            dealerHand.pop();
-            isDealersTurn = true;
-          }
+        @click="isDealersTurn = true"
+        :disabled="
+          gameStateStore.gameOver ||
+          handValue >= 21 ||
+          animationIsRunning ||
+          isDealersTurn
         "
-        :disabled="gameOver || handValue >= 21"
       >
         Stand
-      </v-btn>
+      </q-btn>
     </div>
 
-    <div v-if="gameOver">
-      <div v-if="youWin">YOU WIN!</div>
-      <div v-else-if="isPush">PUSH</div>
-      <div v-else>YOU LOSE!</div>
+    <BounceInAnimation>
+      <h3 v-if="gameStateStore.gameOver && gameStateStore.youWin">You Win!</h3>
+    </BounceInAnimation>
+    <div v-if="gameStateStore.gameOver">
+      <div v-if="gameStateStore.youWin"></div>
+      <div v-else-if="gameStateStore.isPush">PUSH</div>
+      <div v-else>You Lose.</div>
 
-      <v-btn
-        color="orange"
-        elevation="4"
-        x-large
-        @click="
-          {
-            hand = [getRandomCard(), getRandomCard()];
-            dealerHand = [getRandomCard(), CardBacksite];
-            isDealersTurn = false;
-            isBust = false;
-            isPush = false;
-            youWin = false;
-            gameOver = false;
-          }
-        "
-      >
-        Play Again
-      </v-btn>
+      <q-btn color="orange" @click="resetGame"> Play Again </q-btn>
     </div>
   </div>
 </template>
@@ -272,5 +419,19 @@ watch(
   transform: translateY(2px);
   transition: transform 0.2s;
   color: black;
+}
+
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
 }
 </style>
