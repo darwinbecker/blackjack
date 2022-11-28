@@ -1,45 +1,62 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useAnimationStateStore } from "@/stores/AnimationState";
+import { useGameStateStore } from "@/stores/GameState";
+import { useHandStateStore } from "@/stores/HandState";
+import { storeToRefs } from "pinia";
+import { QBtn } from "quasar";
+
+const gameStateStore = useGameStateStore();
+const handStateStore = useHandStateStore();
+const animationStateStore = useAnimationStateStore();
+// const { animationIsRunning } = storeToRefs(animationStateStore);
+</script>
 
 <template>
-  <!-- <div class="Button-List">
-    <v-btn
-      class="mx-2"
+  <div class="Button-List">
+    <!-- Bet -->
+    <q-btn
+      class="q-mx-sm q-px-lg"
       color="blue"
-      elevation="4"
-      x-large
       @click="
         {
         }
       "
-      :disabled="gameOver || handValue >= 21"
+      :disabled="
+        gameStateStore.gameOver ||
+        handStateStore.playerHandValue >= 21 ||
+        animationStateStore.animationIsRunning ||
+        gameStateStore.isDealersTurn
+      "
     >
       Bet
-    </v-btn>
-    <v-btn
-      class="mx-2"
+    </q-btn>
+    <!-- Hit -->
+    <q-btn
+      class="q-mx-sm q-px-lg"
       color="green"
-      elevation="4"
-      x-large
-      @click="hand.push(getRandomCard())"
-      :disabled="gameOver || handValue >= 21"
+      @click="handStateStore.hit(handStateStore.playerHand)"
+      :disabled="
+        gameStateStore.gameOver ||
+        handStateStore.playerHandValue >= 21 ||
+        animationStateStore.animationIsRunning ||
+        gameStateStore.isDealersTurn
+      "
     >
       Hit
-    </v-btn>
-
-    <v-btn
-      class="mx-2"
+    </q-btn>
+    <!-- Stand -->
+    <q-btn
+      class="q-mx-sm q-px-lg"
       color="red"
-      elevation="4"
-      x-large
-      @click="
-        {
-          dealerHand.pop();
-          isDealersTurn = true;
-        }
+      @click="gameStateStore.setIsDealersTurn(true)"
+      :disabled="
+        gameStateStore.gameOver ||
+        handStateStore.playerHandValue >= 21 ||
+        animationStateStore.animationIsRunning ||
+        gameStateStore.isDealersTurn
       "
-      :disabled="gameOver || handValue >= 21"
     >
       Stand
-    </v-btn>
-  </div> -->
+    </q-btn>
+  </div>
 </template>

@@ -1,49 +1,27 @@
 <script setup lang="ts">
-import { inject, nextTick, onMounted, ref, watch, type Ref } from "vue";
-import {
-  CARDS_FULL,
-  getRandomCard,
-  getAceCard,
-  getHighCard,
-  getLowCard,
-} from "../config/Cards";
+import { nextTick, onMounted, ref, watch, type Ref } from "vue";
+import { getRandomCard } from "../config/Cards";
 import { determineBestHandValue, parseCardValue } from "../lib/HandValue";
 import {
   REVEAL_CARD_DELAY_MS,
   REVEAL_HAND_VALUE_DELAY_MS,
 } from "../config/Config";
-import type { Card } from "../models/Card";
 import BounceInAnimation from "./BounceInAnimation.vue";
 import CardItem from "./CardItem.vue";
 
 import { useGameStateStore } from "../stores/GameState";
-
-const hand: Ref<Card[]> = ref([getRandomCard(), getRandomCard()]);
-const handNumbers: Ref<number[]> = ref(
-  [0]
-  // hand.value.map((card) => parseCardValue(card.value))
-);
-
-const handValue: Ref<number> = ref(
-  0
-  // determineBestHandValue(handNumbers.value)
-);
+import { useHandStateStore } from "../stores/HandState";
+import { storeToRefs } from "pinia";
+import { useAnimationStateStore } from "@/stores/AnimationState";
+import ActionMenu from "./ActionMenu.vue";
 
 const gameStateStore = useGameStateStore();
+const handStateStore = useHandStateStore();
+const animationStateStore = useAnimationStateStore();
 
-const isDealersTurn: Ref<boolean> = ref(false);
-const dealerHand: Ref<Card[]> = ref([getRandomCard(), getRandomCard()]);
-const dealerHandNumbers: Ref<number[]> = ref(
-  [0]
-  // dealerHand.value.map((card) => parseCardValue(card.value))
-  // [parseCardValue(dealerHand.value[0].value)]
-);
-const dealerHandValue: Ref<number> = ref(
-  0
-  // determineBestHandValue([dealerHandNumbers.value[0]])
-);
-
-const animationIsRunning: Ref<boolean> = ref(false);
+const { isDealersTurn } = storeToRefs(gameStateStore);
+const { playerHand, dealerHand } = storeToRefs(handStateStore);
+const { animationIsRunning } = storeToRefs(animationStateStore);
 
 onMounted(() => {
   // reveal players hand
@@ -56,9 +34,15 @@ onMounted(() => {
       setTimeout(() => {
         card.classList.add("is-flipped");
         setTimeout(() => {
-          handValue.value += determineBestHandValue([
-            parseCardValue(hand.value[index].value),
+          handStateStore.setPlayerHandNumbers([
+            ...handStateStore.playerHandNumbers,
+            parseCardValue(handStateStore.playerHand[index].value),
           ]);
+
+          handStateStore.setPlayerHandValue(
+            determineBestHandValue(handStateStore.playerHandNumbers)
+          );
+
           checkHandValue();
         }, REVEAL_HAND_VALUE_DELAY_MS);
       }, REVEAL_CARD_DELAY_MS * (index + 1));
@@ -71,21 +55,22 @@ onMounted(() => {
     setTimeout(() => {
       dealerCards[0].classList.add("is-flipped");
       setTimeout(() => {
-        dealerHandValue.value = determineBestHandValue([
-          parseCardValue(dealerHand.value[0].value),
+        handStateStore.setDealerHandNumbers([
+          parseCardValue(handStateStore.dealerHand[0].value),
         ]);
+
+        handStateStore.setDealerHandValue(
+          determineBestHandValue(handStateStore.dealerHandNumbers)
+        );
+
         animationIsRunning.value = false;
       }, REVEAL_HAND_VALUE_DELAY_MS);
     }, REVEAL_CARD_DELAY_MS * (playerCards.length + 1));
   });
 });
 
-const hit = (hand: Card[]) => {
-  hand.push(getRandomCard());
-};
-
 watch(
-  hand,
+  playerHand,
   (newHand) => {
     nextTick(() => {
       animationIsRunning.value = true;
@@ -102,11 +87,17 @@ watch(
         setTimeout(() => {
           playerCards[playerCards.length - 1].classList.add("is-flipped");
           setTimeout(() => {
-            handNumbers.value = [
-              parseCardValue(hand.value[hand.value.length - 1].value),
-            ];
+            handStateStore.setPlayerHandNumbers([
+              ...handStateStore.playerHandNumbers,
+              parseCardValue(
+                handStateStore.playerHand[handStateStore.playerHand.length - 1]
+                  .value
+              ),
+            ]);
 
-            handValue.value += determineBestHandValue(handNumbers.value);
+            handStateStore.setPlayerHandValue(
+              determineBestHandValue(handStateStore.playerHandNumbers)
+            );
             checkHandValue();
 
             animationIsRunning.value = false;
@@ -118,34 +109,41 @@ watch(
           setTimeout(() => {
             card.classList.add("is-flipped");
             setTimeout(() => {
-              handValue.value += determineBestHandValue([
-                parseCardValue(hand.value[index].value),
+              handStateStore.setPlayerHandNumbers([
+                ...handStateStore.playerHandNumbers,
+                parseCardValue(handStateStore.playerHand[index].value),
               ]);
 
+              handStateStore.setPlayerHandValue(
+                determineBestHandValue(handStateStore.playerHandNumbers)
+              );
               checkHandValue();
             }, REVEAL_HAND_VALUE_DELAY_MS);
           }, REVEAL_CARD_DELAY_MS * (index + 1));
         });
 
-        // reveal dealers hand
+        // reveal dealers first card
         const dealerCards = document.querySelectorAll(
           ".Dealercard.flip-card-inner"
         );
         setTimeout(() => {
           dealerCards[0].classList.add("is-flipped");
           setTimeout(() => {
-            dealerHandValue.value = determineBestHandValue([
-              parseCardValue(dealerHand.value[0].value),
+            handStateStore.setDealerHandNumbers([
+              parseCardValue(handStateStore.dealerHand[0].value),
             ]);
+
+            handStateStore.setDealerHandValue(
+              determineBestHandValue(handStateStore.dealerHandNumbers)
+            );
+
             animationIsRunning.value = false;
           }, REVEAL_HAND_VALUE_DELAY_MS);
         }, REVEAL_CARD_DELAY_MS * (playerCards.length + 1));
       }
     });
   },
-  {
-    deep: true,
-  }
+  { deep: true }
 );
 
 watch(
@@ -168,14 +166,17 @@ watch(
         setTimeout(() => {
           dealerCards[dealerCards.length - 1].classList.add("is-flipped");
           setTimeout(() => {
-            dealerHandNumbers.value = [
-              parseCardValue(newDealerHand[newDealerHand.length - 1].value),
-            ];
+            handStateStore.setDealerHandNumbers([
+              ...handStateStore.dealerHandNumbers,
+              parseCardValue(
+                handStateStore.dealerHand[handStateStore.dealerHand.length - 1]
+                  .value
+              ),
+            ]);
 
-            dealerHandValue.value += determineBestHandValue(
-              dealerHandNumbers.value
+            handStateStore.setDealerHandValue(
+              determineBestHandValue(handStateStore.dealerHandNumbers)
             );
-
             checkDealerHandValue();
 
             animationIsRunning.value = false;
@@ -185,14 +186,19 @@ watch(
         setTimeout(() => {
           dealerCards[dealerCards.length - 1].classList.add("is-flipped");
           setTimeout(() => {
-            dealerHandNumbers.value = [
-              parseCardValue(newDealerHand[newDealerHand.length - 1].value),
-            ];
+            handStateStore.setDealerHandNumbers([
+              ...handStateStore.dealerHandNumbers,
+              parseCardValue(
+                handStateStore.dealerHand[handStateStore.dealerHand.length - 1]
+                  .value
+              ),
+            ]);
 
-            dealerHandValue.value += determineBestHandValue(
-              dealerHandNumbers.value
+            // TODO: here is a Bug
+            handStateStore.setDealerHandValue(
+              determineBestHandValue(handStateStore.dealerHandNumbers)
             );
-
+            console.log("dealerHandNumbers", handStateStore.dealerHandNumbers);
             checkDealerHandValue();
 
             animationIsRunning.value = false;
@@ -201,38 +207,36 @@ watch(
       }
     });
   },
-  {
-    deep: true,
-  }
+  { deep: true }
 );
 
 const checkDealerHandValue = () => {
   if (
-    dealerHandValue.value > 16 &&
-    dealerHandValue.value < 22 &&
-    dealerHandValue.value > handValue.value
+    handStateStore.dealerHandValue > 16 &&
+    handStateStore.dealerHandValue < 22 &&
+    handStateStore.dealerHandValue > handStateStore.playerHandValue
   ) {
     gameStateStore.setYouWin(false);
     gameStateStore.setGameOver(true);
   } else if (
-    dealerHandValue.value === handValue.value &&
-    dealerHandValue.value > 16
+    handStateStore.dealerHandValue === handStateStore.playerHandValue &&
+    handStateStore.dealerHandValue > 16
   ) {
     gameStateStore.setIsPush(true);
     gameStateStore.setGameOver(true);
-  } else if (dealerHandValue.value > 16) {
+  } else if (handStateStore.dealerHandValue > 16) {
     gameStateStore.setYouWin(true);
     gameStateStore.setGameOver(true);
   } else {
-    hit(dealerHand.value);
+    handStateStore.hit(handStateStore.dealerHand);
   }
 };
 
 const checkHandValue = () => {
-  if (handValue.value > 21) {
+  if (handStateStore.playerHandValue > 21) {
     gameStateStore.setIsBust(true);
     gameStateStore.setGameOver(true);
-  } else if (handValue.value === 21) {
+  } else if (handStateStore.playerHandValue === 21) {
     gameStateStore.setIsBust(false);
     gameStateStore.setYouWin(true);
     gameStateStore.setGameOver(true);
@@ -245,13 +249,15 @@ const resetGame = async () => {
   gameStateStore.setIsPush(false);
   gameStateStore.setYouWin(false);
   gameStateStore.setGameOver(false);
-  handValue.value = 0;
-  dealerHandValue.value = 0;
-  hand.value = [];
-  dealerHand.value = [];
+  handStateStore.setPlayerHandValue(0);
+  handStateStore.setDealerHandValue(0);
+  handStateStore.setPlayerHandNumbers([]);
+  handStateStore.setDealerHandNumbers([]);
+  handStateStore.setPlayerHand([]);
+  handStateStore.setDealerHand([]);
   nextTick(() => {
-    hand.value = [getRandomCard(), getRandomCard()];
-    dealerHand.value = [getRandomCard(), getRandomCard()];
+    handStateStore.setPlayerHand([getRandomCard(), getRandomCard()]);
+    handStateStore.setDealerHand([getRandomCard(), getRandomCard()]);
   });
 };
 </script>
@@ -261,73 +267,27 @@ const resetGame = async () => {
     <div class="Dealer">
       <div
         class="Card"
-        v-for="(card, index) in dealerHand"
+        v-for="(card, index) in handStateStore.dealerHand"
         :key="card.id + '-' + index"
       >
         <CardItem class="HiddenCard" :card="card" :isDealer="true"></CardItem>
       </div>
     </div>
-    <p>Value: {{ dealerHandValue }}</p>
+    <p>Value: {{ handStateStore.dealerHandValue }}</p>
 
     <div class="Hand">
       <div
         class="Card"
-        v-for="(card, index) in hand"
+        v-for="(card, index) in handStateStore.playerHand"
         :key="card.id + '-' + index"
       >
         <CardItem :card="card" :isDealer="false"></CardItem>
         <!-- <img :src="card.image" alt="card" width="100" /> -->
       </div>
     </div>
-    <p>Value: {{ handValue }}</p>
+    <p>Value: {{ handStateStore.playerHandValue }}</p>
 
-    <div class="Button-List">
-      <!-- Bet -->
-      <q-btn
-        class="q-mx-sm q-px-lg"
-        color="blue"
-        @click="
-          {
-          }
-        "
-        :disabled="
-          gameStateStore.gameOver ||
-          handValue >= 21 ||
-          animationIsRunning ||
-          isDealersTurn
-        "
-      >
-        Bet
-      </q-btn>
-      <!-- Hit -->
-      <q-btn
-        class="q-mx-sm q-px-lg"
-        color="green"
-        @click="hit(hand)"
-        :disabled="
-          gameStateStore.gameOver ||
-          handValue >= 21 ||
-          animationIsRunning ||
-          isDealersTurn
-        "
-      >
-        Hit
-      </q-btn>
-      <!-- Stand -->
-      <q-btn
-        class="q-mx-sm q-px-lg"
-        color="red"
-        @click="isDealersTurn = true"
-        :disabled="
-          gameStateStore.gameOver ||
-          handValue >= 21 ||
-          animationIsRunning ||
-          isDealersTurn
-        "
-      >
-        Stand
-      </q-btn>
-    </div>
+    <ActionMenu />
 
     <BounceInAnimation>
       <h3 v-if="gameStateStore.gameOver && gameStateStore.youWin">You Win!</h3>

@@ -562,7 +562,13 @@ export const getHighCard = (): Card => {
   return CARDS_FULL[8] as Card;
 };
 
-export const getAceCard = (): Card => {
-  // return CARDS_FULL[3] as Card;
+export const getCardSix = (): Card => {
+  return CARDS_FULL[4] as Card;
+};
+export const getCardTen = (): Card => {
+  return CARDS_FULL[8] as Card;
+};
+
+export const getCardAce = (): Card => {
   return CARDS_FULL[12] as Card;
 };
