@@ -244,17 +244,9 @@ const checkHandValue = () => {
 };
 
 const resetGame = async () => {
-  isDealersTurn.value = false;
-  gameStateStore.setIsBust(false);
-  gameStateStore.setIsPush(false);
-  gameStateStore.setYouWin(false);
-  gameStateStore.setGameOver(false);
-  handStateStore.setPlayerHandValue(0);
-  handStateStore.setDealerHandValue(0);
-  handStateStore.setPlayerHandNumbers([]);
-  handStateStore.setDealerHandNumbers([]);
-  handStateStore.setPlayerHand([]);
-  handStateStore.setDealerHand([]);
+  // isDealersTurn.value = false;
+  gameStateStore.resetGameState();
+  handStateStore.resetHands();
   nextTick(() => {
     handStateStore.setPlayerHand([getRandomCard(), getRandomCard()]);
     handStateStore.setDealerHand([getRandomCard(), getRandomCard()]);

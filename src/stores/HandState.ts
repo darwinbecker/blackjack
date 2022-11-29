@@ -37,6 +37,15 @@ export const useHandStateStore = defineStore("handState", () => {
     // hand.push(getCardAce());
   };
 
+  const resetHands = () => {
+    setPlayerHandValue(0);
+    setDealerHandValue(0);
+    setPlayerHandNumbers([]);
+    setDealerHandNumbers([]);
+    setPlayerHand([]);
+    setDealerHand([]);
+  };
+
   return {
     playerHand,
     setPlayerHand,
@@ -51,5 +60,6 @@ export const useHandStateStore = defineStore("handState", () => {
     dealerHandValue,
     setDealerHandValue,
     hit,
+    resetHands,
   };
 });

@@ -17,6 +17,14 @@ export const useGameStateStore = defineStore("gameState", () => {
   const isDealersTurn: Ref<boolean> = ref(false);
   const setIsDealersTurn = (value: boolean) => (isDealersTurn.value = value);
 
+  const resetGameState = () => {
+    setIsBust(false);
+    setIsPush(false);
+    setYouWin(false);
+    setGameOver(false);
+    setIsDealersTurn(false);
+  };
+
   return {
     gameOver,
     setGameOver,
@@ -28,5 +36,6 @@ export const useGameStateStore = defineStore("gameState", () => {
     setYouWin,
     isDealersTurn,
     setIsDealersTurn,
+    resetGameState,
   };
 });
