@@ -23,30 +23,59 @@ const { isDealersTurn } = storeToRefs(gameStateStore);
 const { playerHand, dealerHand } = storeToRefs(handStateStore);
 const { animationIsRunning } = storeToRefs(animationStateStore);
 
+const revealPlayerHand = (playerCards: NodeListOf<Element>) => {
+  // restart game => reveal players hand
+  playerCards.forEach((card, index) => {
+    setTimeout(() => {
+      card.classList.add("is-flipped");
+      setTimeout(() => {
+        handStateStore.setPlayerHandNumbers([
+          ...handStateStore.playerHandNumbers,
+          parseCardValue(handStateStore.playerHand[index].value),
+        ]);
+
+        handStateStore.setPlayerHandValue(
+          determineBestHandValue(handStateStore.playerHandNumbers)
+        );
+        checkHandValue();
+      }, REVEAL_HAND_VALUE_DELAY_MS);
+    }, REVEAL_CARD_DELAY_MS * (index + 1));
+  });
+};
+
+// TODO: refactor this: also use this function to reveal dealers hand
+// param: more generic and checkHanvalue should optional or be called from outside
+const revealSingleCard = (cardElement: Element) => {
+  setTimeout(() => {
+    cardElement.classList.add("is-flipped");
+    setTimeout(() => {
+      handStateStore.setPlayerHandNumbers([
+        ...handStateStore.playerHandNumbers,
+        parseCardValue(
+          handStateStore.playerHand[handStateStore.playerHand.length - 1].value
+        ),
+      ]);
+
+      handStateStore.setPlayerHandValue(
+        determineBestHandValue(handStateStore.playerHandNumbers)
+      );
+      // TODO: make this optional for the dealer
+      checkHandValue();
+
+      animationIsRunning.value = false;
+    }, REVEAL_HAND_VALUE_DELAY_MS);
+  }, REVEAL_CARD_DELAY_MS);
+};
+
 onMounted(() => {
+  resetGame();
   // reveal players hand
   animationIsRunning.value = true;
   nextTick(() => {
     const playerCards = document.querySelectorAll(
       ".Playercard.flip-card-inner"
     );
-    playerCards.forEach((card, index) => {
-      setTimeout(() => {
-        card.classList.add("is-flipped");
-        setTimeout(() => {
-          handStateStore.setPlayerHandNumbers([
-            ...handStateStore.playerHandNumbers,
-            parseCardValue(handStateStore.playerHand[index].value),
-          ]);
-
-          handStateStore.setPlayerHandValue(
-            determineBestHandValue(handStateStore.playerHandNumbers)
-          );
-
-          checkHandValue();
-        }, REVEAL_HAND_VALUE_DELAY_MS);
-      }, REVEAL_CARD_DELAY_MS * (index + 1));
-    });
+    revealPlayerHand(playerCards);
 
     // reveal dealers hand
     const dealerCards = document.querySelectorAll(
@@ -84,43 +113,10 @@ watch(
 
       if (playerCards.length > 2) {
         // this is a hack to get the last card to flip
-        setTimeout(() => {
-          playerCards[playerCards.length - 1].classList.add("is-flipped");
-          setTimeout(() => {
-            handStateStore.setPlayerHandNumbers([
-              ...handStateStore.playerHandNumbers,
-              parseCardValue(
-                handStateStore.playerHand[handStateStore.playerHand.length - 1]
-                  .value
-              ),
-            ]);
-
-            handStateStore.setPlayerHandValue(
-              determineBestHandValue(handStateStore.playerHandNumbers)
-            );
-            checkHandValue();
-
-            animationIsRunning.value = false;
-          }, REVEAL_HAND_VALUE_DELAY_MS);
-        }, REVEAL_CARD_DELAY_MS);
+        revealSingleCard(playerCards[playerCards.length - 1]);
       } else {
         // restart game => reveal players hand
-        playerCards.forEach((card, index) => {
-          setTimeout(() => {
-            card.classList.add("is-flipped");
-            setTimeout(() => {
-              handStateStore.setPlayerHandNumbers([
-                ...handStateStore.playerHandNumbers,
-                parseCardValue(handStateStore.playerHand[index].value),
-              ]);
-
-              handStateStore.setPlayerHandValue(
-                determineBestHandValue(handStateStore.playerHandNumbers)
-              );
-              checkHandValue();
-            }, REVEAL_HAND_VALUE_DELAY_MS);
-          }, REVEAL_CARD_DELAY_MS * (index + 1));
-        });
+        revealPlayerHand(playerCards);
 
         // reveal dealers first card
         const dealerCards = document.querySelectorAll(
