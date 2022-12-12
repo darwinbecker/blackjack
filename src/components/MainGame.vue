@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch, type Ref } from "vue";
+import {
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+  type Ref,
+} from "vue";
 import { getRandomCard } from "../config/Cards";
 import { determineBestHandValue, parseCardValue } from "../lib/HandValue";
 import {
@@ -11,7 +18,7 @@ import CardItem from "./CardItem.vue";
 
 import { useGameStateStore } from "../stores/GameState";
 import { useHandStateStore } from "../stores/HandState";
-import { storeToRefs } from "pinia";
+import { storeToRefs, type Store } from "pinia";
 import { useAnimationStateStore } from "@/stores/AnimationState";
 import ActionMenu from "./ActionMenu.vue";
 
@@ -67,6 +74,38 @@ const revealSingleCard = (cardElement: Element) => {
   }, REVEAL_CARD_DELAY_MS);
 };
 
+const revealSingleDealerCard = (
+  cardElement: Element,
+  dealerHandValue: string,
+  checkHandValue?: boolean,
+  animationDelay?: number
+) => {
+  setTimeout(
+    () => {
+      cardElement.classList.add("is-flipped");
+      setTimeout(() => {
+        handStateStore.setDealerHandNumbers([
+          ...handStateStore.dealerHandNumbers,
+          parseCardValue(dealerHandValue),
+        ]);
+
+        handStateStore.setDealerHandValue(
+          determineBestHandValue(handStateStore.dealerHandNumbers)
+        );
+        console.log("dealerHandNumbers", handStateStore.dealerHandNumbers);
+        if (checkHandValue) {
+          checkDealerHandValue();
+        }
+
+        animationIsRunning.value = false;
+      }, REVEAL_HAND_VALUE_DELAY_MS);
+    },
+    animationDelay
+      ? REVEAL_CARD_DELAY_MS * animationDelay
+      : REVEAL_CARD_DELAY_MS
+  );
+};
+
 onMounted(() => {
   resetGame();
   // reveal players hand
@@ -81,21 +120,23 @@ onMounted(() => {
     const dealerCards = document.querySelectorAll(
       ".Dealercard.flip-card-inner"
     );
-    setTimeout(() => {
-      dealerCards[0].classList.add("is-flipped");
-      setTimeout(() => {
-        handStateStore.setDealerHandNumbers([
-          parseCardValue(handStateStore.dealerHand[0].value),
-        ]);
 
-        handStateStore.setDealerHandValue(
-          determineBestHandValue(handStateStore.dealerHandNumbers)
-        );
+    if (!dealerCards.length) {
+      animationIsRunning.value = false;
+      return;
+    }
 
-        animationIsRunning.value = false;
-      }, REVEAL_HAND_VALUE_DELAY_MS);
-    }, REVEAL_CARD_DELAY_MS * (playerCards.length + 1));
+    revealSingleDealerCard(
+      dealerCards[0],
+      handStateStore.dealerHand[0].value,
+      false,
+      playerCards.length + 1
+    );
   });
+});
+
+onBeforeUnmount(() => {
+  resetGame();
 });
 
 watch(
@@ -122,20 +163,13 @@ watch(
         const dealerCards = document.querySelectorAll(
           ".Dealercard.flip-card-inner"
         );
-        setTimeout(() => {
-          dealerCards[0].classList.add("is-flipped");
-          setTimeout(() => {
-            handStateStore.setDealerHandNumbers([
-              parseCardValue(handStateStore.dealerHand[0].value),
-            ]);
 
-            handStateStore.setDealerHandValue(
-              determineBestHandValue(handStateStore.dealerHandNumbers)
-            );
-
-            animationIsRunning.value = false;
-          }, REVEAL_HAND_VALUE_DELAY_MS);
-        }, REVEAL_CARD_DELAY_MS * (playerCards.length + 1));
+        revealSingleDealerCard(
+          dealerCards[0],
+          handStateStore.dealerHand[0].value,
+          false,
+          playerCards.length + 1
+        );
       }
     });
   },
@@ -156,51 +190,11 @@ watch(
         animationIsRunning.value = false;
         return;
       }
-
-      if (dealerCards.length === 2) {
-        // this is a hack to get the last card to flip
-        setTimeout(() => {
-          dealerCards[dealerCards.length - 1].classList.add("is-flipped");
-          setTimeout(() => {
-            handStateStore.setDealerHandNumbers([
-              ...handStateStore.dealerHandNumbers,
-              parseCardValue(
-                handStateStore.dealerHand[handStateStore.dealerHand.length - 1]
-                  .value
-              ),
-            ]);
-
-            handStateStore.setDealerHandValue(
-              determineBestHandValue(handStateStore.dealerHandNumbers)
-            );
-            checkDealerHandValue();
-
-            animationIsRunning.value = false;
-          }, REVEAL_HAND_VALUE_DELAY_MS);
-        }, REVEAL_CARD_DELAY_MS);
-      } else {
-        setTimeout(() => {
-          dealerCards[dealerCards.length - 1].classList.add("is-flipped");
-          setTimeout(() => {
-            handStateStore.setDealerHandNumbers([
-              ...handStateStore.dealerHandNumbers,
-              parseCardValue(
-                handStateStore.dealerHand[handStateStore.dealerHand.length - 1]
-                  .value
-              ),
-            ]);
-
-            // TODO: here is a Bug
-            handStateStore.setDealerHandValue(
-              determineBestHandValue(handStateStore.dealerHandNumbers)
-            );
-            console.log("dealerHandNumbers", handStateStore.dealerHandNumbers);
-            checkDealerHandValue();
-
-            animationIsRunning.value = false;
-          }, REVEAL_HAND_VALUE_DELAY_MS);
-        }, REVEAL_CARD_DELAY_MS);
-      }
+      revealSingleDealerCard(
+        dealerCards[dealerCards.length - 1],
+        handStateStore.dealerHand[dealerCards.length - 1].value,
+        true
+      );
     });
   },
   { deep: true }
