@@ -14,7 +14,7 @@ const animationStateStore = useAnimationStateStore();
 <template>
   <div class="Button-List">
     <!-- Bet -->
-    <q-btn
+    <!-- <q-btn
       class="q-mx-sm q-px-lg"
       color="blue"
       @click="
@@ -29,7 +29,7 @@ const animationStateStore = useAnimationStateStore();
       "
     >
       Bet
-    </q-btn>
+    </q-btn> -->
     <!-- Hit -->
     <q-btn
       class="q-mx-sm q-px-lg"
