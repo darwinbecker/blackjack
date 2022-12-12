@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import {
-  nextTick,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  watch,
-  type Ref,
-} from "vue";
+import { nextTick, onBeforeUnmount, onMounted, watch } from "vue";
 import { getRandomCard } from "../config/Cards";
 import { determineBestHandValue, parseCardValue } from "../lib/HandValue";
 import {
@@ -18,7 +11,7 @@ import CardItem from "./CardItem.vue";
 
 import { useGameStateStore } from "../stores/GameState";
 import { useHandStateStore } from "../stores/HandState";
-import { storeToRefs, type Store } from "pinia";
+import { storeToRefs } from "pinia";
 import { useAnimationStateStore } from "@/stores/AnimationState";
 import ActionMenu from "./ActionMenu.vue";
 
