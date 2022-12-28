@@ -1,0 +1,11 @@
+Rules:
+
+e.g. with 10€ bet:
+Win: 1 to 1: 10€ to 10€ => 20€ payout
+BJ: 3 to 2: 10€ to 15€ => 25€ payout
+Push: 10€ to 0€ => 10€ payout
+
+Startmoney: 1.000€
+
+Bet: 5€, 10€, 20€, 50€, 100€, 200€, (500€, 1000€)
+
