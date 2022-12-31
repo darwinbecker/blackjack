@@ -269,8 +269,8 @@ const resetGame = async () => {
     </BounceInAnimation>
     <div v-if="gameStateStore.gameOver">
       <div v-if="gameStateStore.youWin"></div>
-      <div v-else-if="gameStateStore.isPush">PUSH</div>
-      <div v-else>You Lose.</div>
+      <div v-else-if="gameStateStore.isPush">Push</div>
+      <div v-else>You Lose</div>
 
       <q-btn color="orange" @click="resetGame"> Play Again </q-btn>
     </div>
