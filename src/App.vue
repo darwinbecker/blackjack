@@ -14,7 +14,7 @@ import MainGame from "./components/MainGame.vue";
 
 <style scoped lang="scss">
 .game {
-  position: absolute;
-  top: 7.5%;
+  // position: absolute;
+  // top: 10%;
 }
 </style>

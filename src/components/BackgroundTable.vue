@@ -1,6 +1,6 @@
 <template>
-  <img src="/src/assets/Table-full.svg"/>
-  <!-- <div class="backround-image"></div> -->
+  <!-- <img src="/src/assets/Table-full.svg" /> -->
+  <div class="backround-image absolute-top"></div>
 </template>
 
 <script setup lang="ts"></script>
@@ -11,10 +11,9 @@
   // background-image: url("../../assets/images/login-image-student.png");
   // background-repeat: no-repeat;
   // background-size: cover;
-  background: url("/src/assets/Table-full.svg") no-repeat;
-  height: 100%;
+  background: url("../assets/Table-full.svg") no-repeat center top;
+  background-size: contain;
   width: 100%;
-  position: absolute;
-  top: 0;
+  height: 100%;
 }
 </style>

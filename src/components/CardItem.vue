@@ -19,10 +19,18 @@ const props = defineProps<CardProps>();
       "
     >
       <div class="flip-card-front">
-        <img :src="CardBacksite.image" :alt="CardBacksite.name" width="100" />
+        <img
+          :src="CardBacksite.image"
+          :alt="CardBacksite.name"
+          class="card-image"
+        />
       </div>
       <div class="flip-card-back">
-        <img :src="props.card.image" :alt="props.card.name" width="100" />
+        <img
+          :src="props.card.image"
+          :alt="props.card.name"
+          class="card-image"
+        />
       </div>
     </div>
     <!-- <div class="Playercard flip-card-inner" v-else>
@@ -37,6 +45,20 @@ const props = defineProps<CardProps>();
 </template>
 
 <style>
+.card-image {
+  /* width: 100px;
+  height: 140px; */
+  max-width: 100%;
+  height: auto;
+}
+/* .Dealercard{
+  position: absolute;
+  top: 50%;
+}
+.Playercard{
+  position: absolute;
+  top: 50%;
+} */
 /* The flip card container - set the width and height to whatever you want. We have added the border property to demonstrate that the flip itself goes out of the box on hover (remove perspective if you don't want the 3D effect */
 .flip-card {
   background-color: transparent;
