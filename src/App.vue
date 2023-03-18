@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Cards from "./components/Cards.vue";
+import MainGame from "./components/MainGame.vue";
 </script>
 
 <template>
   <main>
-    <Cards />
+    <MainGame />
   </main>
 </template>
