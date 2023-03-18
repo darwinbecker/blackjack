@@ -238,41 +238,56 @@ const resetGame = async () => {
 </script>
 
 <template>
-  <div class="Blackjack">
-    <div class="Dealer">
-      <div
-        class="Card"
-        v-for="(card, index) in handStateStore.dealerHand"
-        :key="card.id + '-' + index"
-      >
-        <CardItem class="HiddenCard" :card="card" :isDealer="true"></CardItem>
+  <div class="Blackjack column justify-center q-gutter-y-xl">
+    <div class="Dealer-Wrapper">
+      <h4 class="q-mb-md">Dealer</h4>
+      <div class="Dealer-Cards">
+        <div
+          class="Card"
+          v-for="(card, index) in handStateStore.dealerHand"
+          :key="card.id + '-' + index"
+        >
+          <CardItem class="HiddenCard" :card="card" :isDealer="true"></CardItem>
+        </div>
       </div>
+      <p>Value: {{ handStateStore.dealerHandValue }}</p>
     </div>
-    <p>Value: {{ handStateStore.dealerHandValue }}</p>
 
-    <div class="Hand">
-      <div
-        class="Card"
-        v-for="(card, index) in handStateStore.playerHand"
-        :key="card.id + '-' + index"
-      >
-        <CardItem :card="card" :isDealer="false"></CardItem>
-        <!-- <img :src="card.image" alt="card" width="100" /> -->
+    <div>
+      <div class="Hand-Wrapper">
+        <div class="Hand-Cards">
+          <div
+            class="Card"
+            v-for="(card, index) in handStateStore.playerHand"
+            :key="card.id + '-' + index"
+          >
+            <CardItem :card="card" :isDealer="false"></CardItem>
+            <!-- <img :src="card.image" alt="card" width="100" /> -->
+          </div>
+        </div>
+        <p>Value: {{ handStateStore.playerHandValue }}</p>
+        <h4 style="margin: 20px 0">You</h4>
       </div>
-    </div>
-    <p>Value: {{ handStateStore.playerHandValue }}</p>
 
-    <ActionMenu />
-
-    <BounceInAnimation>
-      <h3 v-if="gameStateStore.gameOver && gameStateStore.youWin">You Win!</h3>
-    </BounceInAnimation>
-    <div v-if="gameStateStore.gameOver">
-      <div v-if="gameStateStore.youWin"></div>
-      <div v-else-if="gameStateStore.isPush">Push</div>
-      <div v-else>You Lose</div>
-
-      <q-btn color="orange" @click="resetGame"> Play Again </q-btn>
+      <div class="Buttons-Wrapper">
+        <ActionMenu />
+        <div v-if="gameStateStore.gameOver">
+          <q-btn color="orange" @click="resetGame" class="q-mb-md"> Play Again </q-btn>
+        </div>
+        <BounceInAnimation>
+          <h4
+            v-if="gameStateStore.gameOver && gameStateStore.youWin"
+            class="q-my-md"
+          >
+            You Win!
+          </h4>
+        </BounceInAnimation>
+        <div v-if="gameStateStore.gameOver">
+          <div v-if="gameStateStore.youWin"></div>
+          <div v-else-if="gameStateStore.isPush">Push</div>
+          <div v-else>You Lose</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -280,80 +295,39 @@ const resetGame = async () => {
 <style>
 .Blackjack {
   margin: 0 auto;
+  padding: 20px;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 60%;
   text-align: center;
 }
 
-.Hand,
-.Dealer {
+/* .Dealer-Wrapper {
+  position: absolute;
+  top: 0%;
+  left: 50%;
+  transform: translate(-50%, +30%);
+}
+
+.Hand-Wrapper {
+  position: absolute;
+  bottom: 0%;
+  left: 50%;
+  transform: translate(-50%, -80%);
+} */
+
+.Dealer-Cards,
+.Hand-Cards {
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
-.Hit-Button {
-  background-color: #4caf50;
-  border: none;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  cursor: pointer;
-  border-radius: 6px;
-
-  /* box-shadow: 0 9px #489e4b; */
-  /* transition: 3s; */
-}
-
-.Hit-Button:hover {
-  background-color: #3e8e41;
-  transition: background-color 0.2s;
-}
-
-.Hit-Button:active {
-  background-color: #3e8e41;
-  /* transform: translateY(2px);
-  transition: transform 0.2s; */
-  color: black;
-}
-
-.Hit-Button:disabled {
-  background-color: #ccc;
-  transform: none;
-  color: #666;
-  cursor: not-allowed;
-}
-
-.Play-Again-Button {
-  background-color: #a8af4c;
-  border: none;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  cursor: pointer;
-  border-radius: 6px;
-
-  /* box-shadow: 0 9px #489e4b; */
-  /* transition: 3s; */
-}
-
-.Play-Again-Button:hover {
-  background-color: #8c8f3e;
-  transition: background-color 0.2s;
-}
-
-.Play-Again-Button:active {
-  background-color: #8c8f3e;
-  transform: translateY(2px);
-  transition: transform 0.2s;
-  color: black;
+.Buttons-Wrapper {
+  max-width: 500px;
+  margin: auto;
 }
 
 .slide-fade-enter-active {
