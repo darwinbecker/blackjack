@@ -269,23 +269,26 @@ const resetGame = async () => {
         <h4 style="margin: 20px 0">You</h4>
       </div>
 
-      <div class="Buttons-Wrapper">
+      <div class="buttons-wrapper">
         <ActionMenu />
-        <div v-if="gameStateStore.gameOver">
-          <q-btn color="orange" @click="resetGame" class="q-mb-md"> Play Again </q-btn>
-        </div>
-        <BounceInAnimation>
-          <h4
-            v-if="gameStateStore.gameOver && gameStateStore.youWin"
-            class="q-my-md"
-          >
-            You Win!
-          </h4>
-        </BounceInAnimation>
-        <div v-if="gameStateStore.gameOver">
-          <div v-if="gameStateStore.youWin"></div>
-          <div v-else-if="gameStateStore.isPush">Push</div>
-          <div v-else>You Lose</div>
+        <div class="game-result">
+          <div v-if="gameStateStore.gameOver">
+            <q-btn color="orange" @click="resetGame" class="q-mb-md">
+              Play Again
+            </q-btn>
+          </div>
+          <BounceInAnimation>
+            <h4
+              v-if="gameStateStore.gameOver && gameStateStore.youWin"
+              class="q-my-md"
+            >
+              You Win!
+            </h4>
+          </BounceInAnimation>
+          <div v-if="gameStateStore.gameOver">
+            <h4 v-if="gameStateStore.isPush">Push</h4>
+            <h4 v-else-if="!gameStateStore.youWin">You Lose</h4>
+          </div>
         </div>
       </div>
     </div>
@@ -325,9 +328,16 @@ const resetGame = async () => {
   position: relative;
 }
 
-.Buttons-Wrapper {
+.buttons-wrapper {
   max-width: 500px;
   margin: auto;
+  position: relative;
+}
+
+.game-result {
+  position: absolute;
+  right: 50%;
+  transform: translate(50%, 0);
 }
 
 .slide-fade-enter-active {
