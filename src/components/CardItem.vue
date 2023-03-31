@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Card } from "@/models/Card";
-import { CardBacksite } from "../config/Cards";
+import { CardBacksite } from "../data/Cards";
 
 interface CardProps {
   card: Card;
@@ -25,19 +25,13 @@ const props = defineProps<CardProps>();
         <img :src="props.card.image" :alt="props.card.name" width="100" />
       </div>
     </div>
-    <!-- <div class="Playercard flip-card-inner" v-else>
-      <div class="flip-card-front">
-        <img :src="CardBacksite.image" :alt="props.card.name" width="100" />
-      </div>
-      <div class="flip-card-back">
-        <img :src="props.card.image" :alt="CardBacksite.name" width="100" />
-      </div>
-    </div> -->
   </div>
 </template>
 
 <style>
-/* The flip card container - set the width and height to whatever you want. We have added the border property to demonstrate that the flip itself goes out of the box on hover (remove perspective if you don't want the 3D effect */
+/* The flip card container - set the width and height to whatever you want. 
+We have added the border property to demonstrate that the flip itself goes out of the box on hover 
+(remove perspective if you don't want the 3D effect */
 .flip-card {
   background-color: transparent;
   width: 100px;

@@ -553,7 +553,6 @@ export const getRandomCard = (): Card => {
 };
 
 export const getLowCard = (): Card => {
-  // return CARDS_FULL[3] as Card;
   return CARDS_FULL[0] as Card;
 };
 
@@ -565,6 +564,11 @@ export const getHighCard = (): Card => {
 export const getCardSix = (): Card => {
   return CARDS_FULL[4] as Card;
 };
+
+export const getCardSeven = (): Card => {
+  return CARDS_FULL[5] as Card;
+};
+
 export const getCardTen = (): Card => {
   return CARDS_FULL[8] as Card;
 };

@@ -29,28 +29,6 @@ export const determineHandValue =
   (hand: number[]): number =>
     sum(hand.map(determineCardValues).map(strategy));
 
-// export const determineHandValueWithAce = (hand: number[]) => {
-//   const handValue = determineHandValue(max)(hand);
-//   if (handValue > 21) {
-//     return determineHandValue(min)(hand);
-//   } else {
-//     return handValue;
-//   }
-// }
-
-// export const determineHandValueWithoutAce = (hand: number[]) =>
-//   determineHandValue(sum)(hand);
-
-// export const determineHandValueWithAceAndWithoutAce = (hand: number[]) => {
-//   const handValueWithAce = determineHandValueWithAce(hand);
-//   const handValueWithoutAce = determineHandValueWithoutAce(hand);
-//   if (handValueWithAce > 21) {
-//     return handValueWithoutAce;
-//   } else {
-//     return handValueWithAce;
-//   }
-// }
-
 export const isBust = (handValue: number): boolean => handValue > 21;
 
 export const optimisticF = determineHandValue(max);

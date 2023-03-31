@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, watch } from "vue";
-import { getRandomCard } from "../config/Cards";
+import { getCardSeven, getRandomCard } from "../data/Cards";
 import { determineBestHandValue, parseCardValue } from "../lib/HandValue";
 import {
   REVEAL_CARD_DELAY_MS,
@@ -23,8 +23,8 @@ const { isDealersTurn } = storeToRefs(gameStateStore);
 const { playerHand, dealerHand } = storeToRefs(handStateStore);
 const { animationIsRunning } = storeToRefs(animationStateStore);
 
+// this function is called at the (re-)start of the game
 const revealPlayerHand = (playerCards: NodeListOf<Element>) => {
-  // restart game => reveal players hand
   playerCards.forEach((card, index) => {
     setTimeout(() => {
       card.classList.add("is-flipped");
@@ -219,10 +219,15 @@ const checkHandValue = () => {
   if (handStateStore.playerHandValue > 21) {
     gameStateStore.setIsBust(true);
     gameStateStore.setGameOver(true);
-  } else if (handStateStore.playerHandValue === 21) {
+  } else if (
+    handStateStore.playerHandValue === 21 &&
+    handStateStore.playerHand.length === 2
+  ) {
     gameStateStore.setIsBust(false);
     gameStateStore.setYouWin(true);
     gameStateStore.setGameOver(true);
+  } else if (handStateStore.playerHandValue === 21) {
+    gameStateStore.setIsDealersTurn(true);
   }
 };
 
@@ -281,13 +286,16 @@ const resetGame = async () => {
             <h4
               v-if="gameStateStore.gameOver && gameStateStore.youWin"
               class="q-my-md"
+              style="color: green"
             >
               You Win!
             </h4>
           </BounceInAnimation>
           <div v-if="gameStateStore.gameOver">
-            <h4 v-if="gameStateStore.isPush">Push</h4>
-            <h4 v-else-if="!gameStateStore.youWin">You Lose</h4>
+            <h4 v-if="gameStateStore.isPush" style="color: orange">Push</h4>
+            <h4 v-else-if="!gameStateStore.youWin" style="color: red">
+              You Lose
+            </h4>
           </div>
         </div>
       </div>
