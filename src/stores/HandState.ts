@@ -1,4 +1,4 @@
-import { getCardSeven, getRandomCard } from "@/data/Cards";
+import { getRandomCard } from "@/data/Cards";
 import type { Card } from "@/models/Card";
 import { defineStore } from "pinia";
 import { ref, type Ref } from "vue";
@@ -17,7 +17,6 @@ export const useHandStateStore = defineStore("handState", () => {
   const setPlayerHandValue = (value: number) => (playerHandValue.value = value);
 
   const dealerHand: Ref<Card[]> = ref([getRandomCard(), getRandomCard()]);
-  // const dealerHand: Ref<Card[]> = ref([getCardSix(), getCardTen()]);
   const setDealerHand = (cards: Card[]) => (dealerHand.value = cards);
 
   const dealerHandNumbers: Ref<number[]> = ref([0]);
@@ -28,7 +27,6 @@ export const useHandStateStore = defineStore("handState", () => {
   const setDealerHandValue = (value: number) => (dealerHandValue.value = value);
 
   const hit = (hand: Card[]) => {
-    // hand.push(getCardSeven());
     hand.push(getRandomCard());
   };
 
