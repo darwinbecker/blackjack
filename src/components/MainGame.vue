@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, watch } from "vue";
-import { getCardSeven, getRandomCard } from "../data/Cards";
+import { getRandomCard } from "../data/Cards";
 import { determineBestHandValue, parseCardValue } from "../lib/HandValue";
 import {
   REVEAL_CARD_DELAY_MS,
@@ -43,8 +43,6 @@ const revealPlayerHand = (playerCards: NodeListOf<Element>) => {
   });
 };
 
-// TODO: refactor this: also use this function to reveal dealers hand
-// param: more generic and checkHanvalue should optional or be called from outside
 const revealSingleCard = (cardElement: Element) => {
   setTimeout(() => {
     cardElement.classList.add("is-flipped");
@@ -59,7 +57,6 @@ const revealSingleCard = (cardElement: Element) => {
       handStateStore.setPlayerHandValue(
         determineBestHandValue(handStateStore.playerHandNumbers)
       );
-      // TODO: make this optional for the dealer
       checkHandValue();
 
       animationIsRunning.value = false;
@@ -85,7 +82,6 @@ const revealSingleDealerCard = (
         handStateStore.setDealerHandValue(
           determineBestHandValue(handStateStore.dealerHandNumbers)
         );
-        console.log("dealerHandNumbers", handStateStore.dealerHandNumbers);
         if (checkHandValue) {
           checkDealerHandValue();
         }
@@ -101,15 +97,15 @@ const revealSingleDealerCard = (
 
 onMounted(() => {
   resetGame();
-  // reveal players hand
   animationIsRunning.value = true;
   nextTick(() => {
+    // reveal players hand
     const playerCards = document.querySelectorAll(
       ".Playercard.flip-card-inner"
     );
     revealPlayerHand(playerCards);
 
-    // reveal dealers hand
+    // reveal dealers first card
     const dealerCards = document.querySelectorAll(
       ".Dealercard.flip-card-inner"
     );
@@ -134,7 +130,7 @@ onBeforeUnmount(() => {
 
 watch(
   playerHand,
-  (newHand) => {
+  () => {
     nextTick(() => {
       animationIsRunning.value = true;
       const playerCards = document.querySelectorAll(
@@ -232,7 +228,6 @@ const checkHandValue = () => {
 };
 
 const resetGame = async () => {
-  // isDealersTurn.value = false;
   gameStateStore.resetGameState();
   handStateStore.resetHands();
   nextTick(() => {
@@ -267,7 +262,6 @@ const resetGame = async () => {
             :key="card.id + '-' + index"
           >
             <CardItem :card="card" :isDealer="false"></CardItem>
-            <!-- <img :src="card.image" alt="card" width="100" /> -->
           </div>
         </div>
         <p>Value: {{ handStateStore.playerHandValue }}</p>
@@ -312,20 +306,6 @@ const resetGame = async () => {
   max-width: 60%;
   text-align: center;
 }
-
-/* .Dealer-Wrapper {
-  position: absolute;
-  top: 0%;
-  left: 50%;
-  transform: translate(-50%, +30%);
-}
-
-.Hand-Wrapper {
-  position: absolute;
-  bottom: 0%;
-  left: 50%;
-  transform: translate(-50%, -80%);
-} */
 
 .Dealer-Cards,
 .Hand-Cards {
