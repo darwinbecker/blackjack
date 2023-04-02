@@ -9,7 +9,7 @@
     "dev": "vite",
     "preview": "vite preview",
     "type-check": "vue-tsc --noEmit",
-    "test": "jest --watchAll --verbose",
+    "test": "jest --verbose",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },

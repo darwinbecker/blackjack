@@ -1,6 +1,10 @@
-# Blackjack
+# **Blackjack**
 
-This template should help get you started developing with Vue 3 in Vite.
+Blackjack is a card game played with 52 cards without jokers. The objective of the game is to achieve a higher score than the dealer without going over 21 points.
+You can check out and play the game here:
+
+[Blackjack-Demo](https://darwinbecker.github.io/blackjack/)
+
 
 ## Recommended IDE Setup
 
@@ -23,18 +27,35 @@ See [Vite Configuration Reference](https://vitejs.dev/config/).
 
 ## Project Setup
 
+1. Install all node modules:
+
 ```sh
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+2. Start the development server, that compiles and hot-reloads on every change:
 
 ```sh
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+## Additional Commands
+
+
+Run the Jest test suite:
+
+```sh
+npm run test
+```
+
+Create a type-checked, compiled and minified build for production:
 
 ```sh
 npm run build
+```
+
+Deploy the project to gh-pages:
+
+```sh
+npm run deploy
 ```
