@@ -22,6 +22,7 @@ const jack = parseCardValue("J");
 const queen = parseCardValue("Q");
 const king = parseCardValue("K");
 const ace = parseCardValue("A");
+const zero = parseCardValue("00");
 
 describe("Parse card values", () => {
   it("Ace has value 11", () => {
@@ -41,6 +42,9 @@ describe("Parse card values", () => {
   });
   it("9 has value 9", () => {
     expect(nine).toBe(9);
+  });
+  it("00 has value 0", () => {
+    expect(zero).toBe(0);
   });
 });
 
