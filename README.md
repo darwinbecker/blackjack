@@ -1,61 +1,77 @@
-# **Blackjack**
+<p align="center">
+  <img src="public/Logo.png" alt="Blackjack Logo" width="180" />
+</p>
 
-Blackjack is a card game played with 52 cards without jokers. The objective of the game is to achieve a higher score than the dealer without going over 21 points.
-You can check out and play the game here:
+<h1 align="center">Blackjack</h1>
 
-[Blackjack-Demo](https://darwinbecker.github.io/blackjack/)
+<p align="center">
+  A browser-based Blackjack demo built with Vue 3 and TypeScript.
+</p>
 
+<p align="center">
+  <a href="https://darwinbecker.github.io/blackjack/">
+    <strong>Play Blackjack</strong>
+  </a>
+</p>
 
-## Recommended IDE Setup
+## Overview
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+This project is a small implementation of the classic Blackjack card game. It provides a simple, interactive experience where players can play against the dealer using the two fundamental actions: Hit and Stand.
 
-## Type Support for `.vue` Imports in TS
+The application focuses on a clean user interface, custom-designed playing cards, and a component-based architecture.
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+## Features
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+- **Interactive Gameplay** – Play Blackjack using Hit and Stand actions.
+- **Custom Card Design** – Playing cards designed specifically for this project.
+- **Game State Management** – Centralized state management using Pinia.
 
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+## Tech Stack
 
-## Customize configuration
+- **Vue 3**
+- **TypeScript**
+- **Pinia**
+- **Vite**
+- GitHub Pages
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+## Getting Started
 
-## Project Setup
+### Prerequisites
 
-1. Install all node modules:
+- Node.js
+- npm
 
-```sh
+### Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/darwinbecker/blackjack.git
+cd blackjack
+```
+
+Install dependencies:
+
+```bash
 npm install
 ```
 
-2. Start the development server, that compiles and hot-reloads on every change:
+### Development
 
-```sh
+Start the local development server:
+
+```bash
 npm run dev
 ```
 
-## Additional Commands
+### Production Build
 
+Build the application for production:
 
-Run the Jest test suite:
-
-```sh
-npm run test
-```
-
-Create a type-checked, compiled and minified build for production:
-
-```sh
+```bash
 npm run build
 ```
 
-Deploy the project to gh-pages:
+## Deployment
 
-```sh
-npm run deploy
-```
+The application is hosted on **GitHub Pages**.
