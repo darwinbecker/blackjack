@@ -14,19 +14,19 @@
   </a>
 </p>
 
-## Overview
+## 📖 Overview
 
 This project is a small implementation of the classic Blackjack card game. It provides a simple, interactive experience where players can play against the dealer using the two fundamental actions: Hit and Stand.
 
 The application focuses on a clean user interface, custom-designed playing cards, and a component-based architecture.
 
-## Features
+## ✨ Features
 
 - **Interactive Gameplay** – Play Blackjack using Hit and Stand actions.
 - **Custom Card Design** – Playing cards designed specifically for this project.
 - **Game State Management** – Centralized state management using Pinia.
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 - **Vue 3**
 - **TypeScript**
@@ -34,14 +34,14 @@ The application focuses on a clean user interface, custom-designed playing cards
 - **Vite**
 - GitHub Pages
 
-## Getting Started
+## 🚀 Getting Started
 
-### Prerequisites
+### 📋 Prerequisites
 
 - Node.js
 - npm
 
-### Installation
+### 📦 Installation
 
 Clone the repository:
 
@@ -56,7 +56,7 @@ Install dependencies:
 npm install
 ```
 
-### Development
+### 💻 Development
 
 Start the local development server:
 
@@ -64,7 +64,7 @@ Start the local development server:
 npm run dev
 ```
 
-### Production Build
+### 🏗️ Production Build
 
 Build the application for production:
 
@@ -72,6 +72,6 @@ Build the application for production:
 npm run build
 ```
 
-## Deployment
+## 🌐 Deployment
 
 The application is hosted on **GitHub Pages**.
